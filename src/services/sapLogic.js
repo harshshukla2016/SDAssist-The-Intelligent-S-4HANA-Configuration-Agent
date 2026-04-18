@@ -34,34 +34,35 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
       You MUST output a structured JSON response containing:
       {
         "status": "validated",
-        "scenario_type": "Entry | Pricing | Partners | OrderProcess | MM | FICO | Other",
+        "scenario_type": "Entry | Pricing | Partners | OrderProcess | MM | FICO | MasterData | Other",
         "estimatedHours": number,
-        "enterprise_structure": {
-          "sales_org": "code", "dist_channel": "code", "division": "code",
-          "company_code": "code", "plant": "code", "shipping_point": "code",
-          "purchasing_org": "code", "purchasing_group": "code"
-        },
+        "enterprise_structure": { ... },
         "pricing_procedure": {
-          "name": "string",
-          "steps": [...]
+          "name": "ZIM24 - INESH PRICING",
+          "full_grid": [
+            { "step": 10, "ctyp": "ZM24", "description": "Basic Value", "from": "", "to": "", "stat": "X", "reqt": "2", "acck": "ERL" },
+            { "step": 20, "ctyp": "ZFOO", "description": "Customer Dis", "from": "10", "to": "", "stat": "", "reqt": "None", "acck": "ERS" }
+          ]
+        },
+        "master_data": {
+          "customer_views": {
+            "general": ["Name", "Address", "Language"],
+            "company_code": ["Reconciliation Account", "Payment Terms"],
+            "sales_area": ["Shipping Conditions", "Partner Functions"]
+          },
+          "material_views": {
+            "basic": ["Base Unit", "Weight"],
+            "purchasing": ["Purchasing Group", "Valuation Class"],
+            "sales": ["Sales Unit", "Tax Class"]
+          }
         },
         "o2c_flow": [...],
-        "procurement_roadmap": [
-          { "step": "Purchase Requisition", "tcode": "ME51N" },
-          { "step": "Purchase Order", "tcode": "ME21N" },
-          { "step": "Goods Receipt", "tcode": "MIGO" },
-          { "step": "Invoice Verification", "tcode": "MIRO" }
-        ],
-        "financial_ledger": {
-          "dr_account": "Receivables/Inventory",
-          "cr_account": "Revenue/Payables",
-          "gl_mapping_tcode": "VKOA / OBYC"
-        },
+        "procurement_roadmap": [...],
         "configuration_roadmap": [...],
         "warnings": ["Potential pitfalls"]
       }
 
-      Context Rule: For MM, focus on ME21N/MIGO logic. For FICO, focus on VKOA account determination.
+      Context Rule: Respect the 'Condition Technique' (Specific -> General). Use Access Sequences for automatic pricing.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {

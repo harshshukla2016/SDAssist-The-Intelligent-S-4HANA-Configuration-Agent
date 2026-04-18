@@ -13,9 +13,11 @@ import CloudSyncPage from '../pages/CloudSyncPage';
 import ArchivesPage from '../pages/ArchivesPage';
 import EnterprisePage from '../pages/EnterprisePage';
 import O2CPage from '../pages/O2CPage';
+import PricingPage from '../pages/PricingPage';
 import MaterialsPage from '../pages/MaterialsPage';
 import FinancePage from '../pages/FinancePage';
 import VisionLab from '../pages/VisionLab';
+import MasterDataPage from '../pages/MasterDataPage';
 
 // Command Center Panels
 import ProjectAlpha from './ProjectAlpha';
@@ -40,6 +42,7 @@ const AetherLayout = () => {
       case 'mm': return <MaterialsPage />;
       case 'fico': return <FinancePage />;
       case 'vision': return <VisionLab />;
+      case 'master': return <MasterDataPage />;
       case 'safety': return <SafetyLog />;
       default: return <Dashboard />;
     }
@@ -51,7 +54,7 @@ const AetherLayout = () => {
       <SafetyLog />
       <Sidebar />
       <ProjectAlpha isOpen={isAlphaOpen} onClose={() => setIsAlphaOpen(false)} />
-      <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(false)} />
+      <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(true)} />
       
       <div className="flex-1 flex flex-col pl-0 md:pl-20 transition-all duration-300">
         <Header 
