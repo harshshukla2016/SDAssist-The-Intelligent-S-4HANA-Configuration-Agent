@@ -116,7 +116,7 @@ export const analyzeScreenshot = async (fileName, context = "") => {
       messages: [
         { 
           role: "system", 
-          content: "You are an SAP Vision Analyst. Analyze the screenshot name and context to detect configuration glitches. Predict if fields like Item Category, Pricing, or Account assignment are wrong. Return JSON: { glitches: [], suggested_fix: '', confidence: number }" 
+          content: "You are an SAP Vision Analyst. Analyze the screenshot name and context to detect configuration glitches. Return JSON: { glitches: [{ label: string, x: number, y: number }], suggested_fix: string, confidence: number }. x and y are percentages (0-100) on the image." 
         },
         { role: "user", content: `Screenshot: ${fileName}. Context: ${context}` }
       ],
