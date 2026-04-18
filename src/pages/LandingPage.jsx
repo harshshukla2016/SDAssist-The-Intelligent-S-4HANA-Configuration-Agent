@@ -197,6 +197,9 @@ const LandingPage = ({ onEnter }) => {
     { icon:'⚡', title:'Edge Deployed', desc:'Vercel Edge Network — globally distributed CDN with sub-50ms TTFB across all continents.' },
     { icon:'🤖', title:'Llama 3.3 70B', desc:'Powered by Meta\'s Llama 3.3 70B via Groq\'s inference API — state-of-the-art SAP domain reasoning.' },
     { icon:'🏆', title:'Enterprise Standards', desc:'Engineered to modern production standards with robust architecture, minimal dependencies, and pure CSS GPU animations.' },
+  ];
+
+  return (
     <>
       <ScrollProgress/>
 
