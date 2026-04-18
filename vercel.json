@@ -1,0 +1,32 @@
+{
+  "routes": [
+    {
+      "src": "/google78dcbd4a0fb8422d.html",
+      "dest": "/google78dcbd4a0fb8422d.html"
+    },
+    {
+      "src": "/sitemap.xml",
+      "dest": "/sitemap.xml"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
+    },
+    {
+      "src": "/llms.txt",
+      "dest": "/llms.txt"
+    },
+    {
+      "src": "/ai.txt",
+      "dest": "/ai.txt"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
