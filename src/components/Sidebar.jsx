@@ -14,7 +14,8 @@ import {
   Package,
   Landmark,
   Eye,
-  Database
+  Database,
+  Home
 } from 'lucide-react';
 import { useAppState } from '../context/StateContext';
 
@@ -47,6 +48,13 @@ const Sidebar = () => {
       
       <div className="flex flex-col gap-2 flex-grow overflow-y-auto custom-scrollbar pr-2">
         <div className="px-8 mt-4 mb-2 text-[9px] font-bold text-on-surface-variant/40 uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Architectural Core</div>
+        <div 
+          onClick={() => window.location.reload()}
+          className="p-4 mx-4 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-surface-container-high hover:text-on-surface text-on-surface-variant relative group/nav hover-lift"
+        >
+          <div className="shrink-0 transition-transform duration-300 group-hover/nav:scale-110"><Home size={18} /></div>
+          <span className="font-headline text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Home Page</span>
+        </div>
         <NavIcon id="dashboard" icon={<Rocket size={18} />} label="Neural Architect" active={activePage === 'dashboard'} />
         <NavIcon id="master" icon={<Database size={18} />} label="Master Data Dossier" active={activePage === 'master'} />
         <NavIcon id="enterprise" icon={<Building2 size={18} />} label="Enterprise Structure" active={activePage === 'enterprise'} />
@@ -66,7 +74,7 @@ const Sidebar = () => {
 
       <div className="flex flex-col gap-1 mt-auto pt-4 border-t border-outline-variant/5">
         <NavIcon id="support" icon={<HelpCircle size={16} />} label="Neural Support" active={activePage === 'support'} />
-        <NavIcon id="safety" icon={<Terminal size={16} />} label="Overseer Console" active={activePage === 'safety'} />
+        <NavIcon id="safety" icon={<Terminal size={16} />} label="OS Page" active={activePage === 'safety'} />
       </div>
     </nav>
   );

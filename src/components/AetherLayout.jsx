@@ -55,13 +55,13 @@ const AetherLayout = () => {
       <ProjectAlpha isOpen={isAlphaOpen} onClose={() => setIsAlphaOpen(false)} />
       <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(true)} />
       
-      <div className="flex-1 flex flex-col pl-0 md:pl-20 transition-all duration-300">
-        <Header 
-          onOpenAlpha={() => setIsAlphaOpen(true)} 
-          onOpenNeural={() => setIsNeuralOpen(true)} 
-        />
-        
-        <main className="flex-1 overflow-hidden relative">
+      <Header 
+        onOpenAlpha={() => setIsAlphaOpen(true)} 
+        onOpenNeural={() => setIsNeuralOpen(true)} 
+      />
+      
+      <div className="flex-1 flex flex-col pl-0 md:pl-20 transition-all duration-300 relative overflow-hidden">
+        <main className="flex-1 overflow-hidden relative w-full h-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={activePage}
