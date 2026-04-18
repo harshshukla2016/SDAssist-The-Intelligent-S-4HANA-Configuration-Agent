@@ -23,6 +23,7 @@ import { generateFSD } from '../services/googleDocs';
 import TCodeSearch from './TCodeSearch';
 import CalendarPrompt from './CalendarPrompt';
 import PricingHealth from './PricingHealth';
+import FsdViewer from './FsdViewer';
 
 const Dashboard = () => {
   const { 
@@ -37,8 +38,8 @@ const Dashboard = () => {
   
   const [inputValue, setInputValue] = useState('');
   const [showCalendarPrompt, setShowCalendarPrompt] = useState(false);
+  const [showFsdViewer, setShowFsdViewer] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isGeneratingFSD, setIsGeneratingFSD] = useState(false);
 
   // Neural Voice Controller (Web Speech API)
   const startVoiceControl = () => {
@@ -109,6 +110,9 @@ const Dashboard = () => {
     <div className="flex flex-col h-full overflow-hidden">
       {showCalendarPrompt && roadmap && (
         <CalendarPrompt roadmap={roadmap} googleToken={googleToken} onComplete={() => setShowCalendarPrompt(false)} />
+      )}
+      {showFsdViewer && roadmap && (
+        <FsdViewer roadmap={roadmap} onClose={() => setShowFsdViewer(false)} />
       )}
       
       <main className="flex-1 flex overflow-hidden">
@@ -219,26 +223,12 @@ const Dashboard = () => {
               {roadmap && (
                 <button 
                   id="fsd-generate-btn"
-                  aria-label="Generate Functional Specification Document"
-                  onClick={async () => {
-                    if (!googleToken) {
-                      setActivePage('sync');
-                      return;
-                    }
-                    setIsGeneratingFSD(true);
-                    try { 
-                      const result = await generateFSD(roadmap, googleToken); 
-                      if (result.success) {
-                         window.open(result.docUrl, '_blank');
-                      }
-                    } catch (err) {
-                      alert("FSD Generation failed: " + err.message);
-                    } finally { setIsGeneratingFSD(false); }
-                  }}
-                  className={`glass-panel rounded-full px-4 py-2 flex items-center gap-3 border border-primary/20 shadow-2xl hover:bg-primary/5 transition-all ${isGeneratingFSD ? 'animate-pulse' : ''}`}
+                  aria-label="View Functional Specification Document"
+                  onClick={() => setShowFsdViewer(true)}
+                  className="glass-panel rounded-full px-4 py-2 flex items-center gap-3 border border-primary/20 shadow-2xl hover:bg-primary/5 transition-all"
                 >
                   <FileText className="text-primary shrink-0" size={14} />
-                  <span className="font-body text-[10px] sm:text-xs text-on-surface font-medium hidden sm:inline-block">{isGeneratingFSD ? 'Drafting...' : 'Generate FSD'}</span>
+                  <span className="font-body text-[10px] sm:text-xs text-on-surface font-medium hidden sm:inline-block">View FSD (.txt)</span>
                 </button>
               )}
             </div>
