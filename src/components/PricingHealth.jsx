@@ -3,12 +3,12 @@ import { AlertCircle, CheckCircle2, Zap, ArrowDown } from 'lucide-react';
 import { validatePricing } from '../services/sapLogic';
 
 const PricingHealth = ({ roadmap }) => {
-  // Extract technical pricing steps if present, or use default logic
-  const pricingSteps = roadmap.configuration_roadmap?.filter(s => 
-    s.step.toLowerCase().includes('price') || 
-    s.step.toLowerCase().includes('discount') ||
-    s.step.includes('V/08')
-  ) || [];
+  // Extract technical pricing steps safely
+  const roadmapArray = Array.isArray(roadmap.configuration_roadmap) ? roadmap.configuration_roadmap : [];
+  const pricingSteps = roadmapArray.filter(s => {
+    const stepText = typeof s.step === 'string' ? s.step.toLowerCase() : '';
+    return stepText.includes('price') || stepText.includes('discount') || stepText.includes('v/08');
+  });
 
   // Mock expansion for visualization if Gemini didn't return specific conditions
   const conditions = [

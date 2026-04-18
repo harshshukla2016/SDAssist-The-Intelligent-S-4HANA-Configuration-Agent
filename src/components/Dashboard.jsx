@@ -251,7 +251,7 @@ const Dashboard = () => {
               </div>
 
               <div className="flex-1 relative flex flex-col items-center justify-start overflow-y-auto custom-scrollbar w-full pt-4 pb-12">
-                {roadmap?.configuration_roadmap ? (
+                {Array.isArray(roadmap?.configuration_roadmap) && roadmap.configuration_roadmap.length > 0 ? (
                   <div className="flex flex-col gap-6 z-20 w-full max-w-2xl px-4 relative">
                     {/* Vertical connecting line */}
                     <div className="absolute left-[39px] top-8 bottom-8 w-px bg-gradient-to-b from-primary/30 via-secondary/20 to-transparent hidden md:block"></div>
