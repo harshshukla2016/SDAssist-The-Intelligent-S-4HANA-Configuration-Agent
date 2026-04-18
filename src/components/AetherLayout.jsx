@@ -18,6 +18,7 @@ import MaterialsPage from '../pages/MaterialsPage';
 import FinancePage from '../pages/FinancePage';
 import VisionLab from '../pages/VisionLab';
 import MasterDataPage from '../pages/MasterDataPage';
+import SupportPage from '../pages/SupportPage';
 
 // Command Center Panels
 import ProjectAlpha from './ProjectAlpha';
@@ -43,6 +44,7 @@ const AetherLayout = ({ onExit }) => {
       case 'fico': return <FinancePage />;
       case 'vision': return <VisionLab />;
       case 'master': return <MasterDataPage />;
+      case 'support': return <SupportPage />;
       case 'safety': return <SafetyLog />;
       default: return <Dashboard />;
     }

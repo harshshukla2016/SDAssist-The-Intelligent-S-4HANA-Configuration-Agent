@@ -5,7 +5,7 @@ import { useAppState } from '../context/StateContext';
 import AetherLogo from './AetherLogo';
 
 const Header = ({ onOpenAlpha, onOpenNeural, onExit }) => {
-  const { isProcessing } = useAppState();
+  const { isProcessing, setActivePage } = useAppState();
 
   return (
     <header className="h-16 border-b border-outline-variant/10 flex items-center justify-between px-8 premium-glass sticky top-0 z-50">
@@ -31,14 +31,14 @@ const Header = ({ onOpenAlpha, onOpenNeural, onExit }) => {
       <div className="flex gap-4 items-center">
         <StatusGlow status={isProcessing ? 'processing' : 'success'} />
         <div className="h-6 w-px bg-outline-variant/30 hidden sm:block"></div>
-        <button className="text-primary hover:text-white transition-colors active:scale-95 duration-100 flex items-center justify-center">
+        <button onClick={() => setActivePage('safety')} aria-label="Open Overseer Console" className="text-primary hover:text-white transition-colors active:scale-95 duration-100 flex items-center justify-center">
           <Bell size={20} />
         </button>
-        <button className="text-primary hover:text-white transition-colors active:scale-95 duration-100 flex items-center justify-center">
+        <button onClick={onOpenNeural} aria-label="Open Neural Configuration" className="text-primary hover:text-white transition-colors active:scale-95 duration-100 flex items-center justify-center">
           <Settings2 size={20} />
         </button>
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center ml-2 border border-primary/20 text-primary cursor-pointer hover:bg-primary/20 transition-colors shrink-0">
-          <span className="font-headline font-bold text-xs">HS</span>
+        <div onClick={onOpenAlpha} aria-label="Open Project Alpha" className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden ml-2 outline outline-1 outline-outline-variant/30 cursor-pointer">
+          <img src="https://lh3.googleusercontent.com/a/ACg8ocL8Rvhz5v4u3T8X678G8g7X7mX" alt="User" className="w-full h-full object-cover" />
         </div>
       </div>
     </header>
