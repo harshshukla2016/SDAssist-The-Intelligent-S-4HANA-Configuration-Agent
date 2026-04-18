@@ -1,853 +1,591 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-/* ─────────────────────────────────────────────────────────
-   Neural Canvas — GPU-accelerated, optimized to ~35 nodes
-   Mouse tracking via ref (zero React re-renders)
-───────────────────────────────────────────────────────── */
-const NeuralCanvas = ({ nodeCount = 35, opacity = 1 }) => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
-    let animId = null;
-    let W = 0, H = 0;
-    let mouse = { x: 0, y: 0 };
-    let nodes = [];
-    let lastTime = 0;
-    const FPS_CAP = 60;
-    const INTERVAL = 1000 / FPS_CAP;
-    const CONNECT_DIST = 150;
-
-    const resize = () => {
-      W = canvas.width = canvas.offsetWidth;
-      H = canvas.height = canvas.offsetHeight;
-    };
-    resize();
-
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-
-    const onMouse = (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
-    window.addEventListener('mousemove', onMouse, { passive: true });
-
-    for (let i = 0; i < nodeCount; i++) {
-      nodes.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        z: Math.random() * 350 + 80,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        vz: (Math.random() - 0.5) * 0.5,
-        r: Math.random() * 2 + 1.2,
-        hue: Math.random() < 0.55 ? 195 : 260,
-      });
-    }
-
-    const project = (n) => {
-      const fl = 500;
-      const sc = fl / (fl + n.z);
-      const cx = W / 2, cy = H / 2;
-      const dx = (mouse.x - cx) * 0.025 * sc;
-      const dy = (mouse.y - cy) * 0.025 * sc;
-      return {
-        px: (n.x - cx) * sc + cx + dx,
-        py: (n.y - cy) * sc + cy + dy,
-        sc,
-      };
-    };
-
-    const draw = (ts) => {
-      animId = requestAnimationFrame(draw);
-      if (ts - lastTime < INTERVAL) return;
-      lastTime = ts;
-
-      ctx.clearRect(0, 0, W, H);
-
-      // Pre-project all nodes
-      const proj = nodes.map(project);
-
-      // Connections
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = proj[i].px - proj[j].px;
-          const dy = proj[i].py - proj[j].py;
-          const d2 = dx * dx + dy * dy;
-          if (d2 > CONNECT_DIST * CONNECT_DIST) continue;
-          const d = Math.sqrt(d2);
-          const alpha = (1 - d / CONNECT_DIST) * 0.22;
-          ctx.beginPath();
-          ctx.moveTo(proj[i].px, proj[i].py);
-          ctx.lineTo(proj[j].px, proj[j].py);
-          ctx.strokeStyle = `hsla(${nodes[i].hue},100%,75%,${alpha})`;
-          ctx.lineWidth = 0.8;
-          ctx.stroke();
-        }
-      }
-
-      // Nodes
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i];
-        const { px, py, sc } = proj[i];
-        const r = n.r * sc * 1.8;
-        const alpha = 0.3 + 0.7 * sc;
-
-        // outer glow (paint once, cheap)
-        ctx.beginPath();
-        ctx.arc(px, py, r * 5, 0, 6.28318);
-        const g = ctx.createRadialGradient(px, py, 0, px, py, r * 5);
-        g.addColorStop(0, `hsla(${n.hue},100%,75%,${alpha * 0.3})`);
-        g.addColorStop(1, `hsla(${n.hue},100%,75%,0)`);
-        ctx.fillStyle = g;
-        ctx.fill();
-
-        // core
-        ctx.beginPath();
-        ctx.arc(px, py, r, 0, 6.28318);
-        ctx.fillStyle = `hsla(${n.hue},100%,82%,${alpha})`;
-        ctx.fill();
-
-        // move
-        n.x += n.vx; n.y += n.vy; n.z += n.vz;
-        if (n.x < 0 || n.x > W) n.vx *= -1;
-        if (n.y < 0 || n.y > H) n.vy *= -1;
-        if (n.z < 80 || n.z > 430) n.vz *= -1;
-      }
-    };
-
-    animId = requestAnimationFrame(draw);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      ro.disconnect();
-      window.removeEventListener('mousemove', onMouse);
-    };
-  }, [nodeCount]);
-
+/* ─────────────────────────────────────────────────────
+   Pure CSS particle grid — zero JS per frame, GPU only
+───────────────────────────────────────────────────── */
+const ParticleField = () => {
+  const particles = Array.from({ length: 40 });
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute', inset: 0, width: '100%', height: '100%',
-        opacity,
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-      }}
-    />
+    <div className="particle-field" aria-hidden>
+      {particles.map((_, i) => (
+        <div
+          key={i}
+          className="particle"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top:  `${Math.random() * 100}%`,
+            animationDelay: `${(Math.random() * 8).toFixed(2)}s`,
+            animationDuration: `${(6 + Math.random() * 8).toFixed(2)}s`,
+            width:  `${(1 + Math.random() * 2.5).toFixed(1)}px`,
+            height: `${(1 + Math.random() * 2.5).toFixed(1)}px`,
+            background: Math.random() > 0.5 ? '#68d3ff' : '#b088ff',
+          }}
+        />
+      ))}
+    </div>
   );
 };
 
-/* ─── Smooth scroll progress indicator ─── */
-const ScrollLine = () => {
-  const lineRef = useRef(null);
+/* ─── Scroll-progress bar (ref-only, zero React state) ─── */
+const ScrollProgress = () => {
+  const barRef = useRef(null);
   useEffect(() => {
-    const el = document.getElementById('lp-scroll');
-    if (!el || !lineRef.current) return;
+    const el = document.getElementById('lp-root');
+    if (!el || !barRef.current) return;
+    const bar = barRef.current;
     const onScroll = () => {
-      const p = el.scrollTop / (el.scrollHeight - el.clientHeight);
-      lineRef.current.style.transform = `scaleX(${p})`;
+      const p = el.scrollTop / (el.scrollHeight - el.clientHeight) || 0;
+      bar.style.transform = `scaleX(${p})`;
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
   return (
-    <div className="fixed top-16 left-0 right-0 h-[2px] z-50 bg-outline-variant/20">
-      <div ref={lineRef} className="h-full bg-primary origin-left transition-none"
-        style={{ transform: 'scaleX(0)', willChange: 'transform' }} />
+    <div style={{ position:'fixed',top:64,left:0,right:0,height:2,background:'rgba(71,72,73,0.2)',zIndex:200 }}>
+      <div ref={barRef} style={{ height:'100%', background:'#68d3ff', transformOrigin:'left', transform:'scaleX(0)', willChange:'transform', transition:'none' }} />
     </div>
   );
 };
 
-/* ─── Feature Card ─── */
-const FeatureCard = ({ icon, title, desc, color, delay }) => (
+/* ─── Framer fade-in (one-shot, not looping) ─── */
+const FadeUp = ({ children, delay = 0, className = '' }) => (
   <motion.div
-    initial={{ opacity: 0, y: 30 }}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
+
+const FadeUpView = ({ children, delay = 0, className = '' }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 24 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: '-60px' }}
-    transition={{ delay, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-    className="feature-card group relative p-8 rounded-[2rem] border border-outline-variant/10 bg-surface-container-low/60 flex flex-col gap-5 overflow-hidden"
-    style={{ willChange: 'transform, opacity' }}
+    transition={{ duration: 0.5, delay, ease: [0.22, 1, 0.36, 1] }}
+    className={className}
   >
-    <div className="card-glow" style={{ background: color }} />
-    <div
-      className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-      style={{ background: `${color}18`, border: `1px solid ${color}35`, color }}
-    >
+    {children}
+  </motion.div>
+);
+
+/* ─── Feature Card ─── */
+const FeatureCard = ({ icon, title, desc, color, delay }) => (
+  <FadeUpView delay={delay} className="feat-card">
+    <div className="feat-glow" style={{ background: color }} />
+    <div className="feat-icon" style={{ background: `${color}18`, borderColor: `${color}35`, color }}>
       {icon}
     </div>
     <div>
-      <h3 className="font-headline text-lg font-bold text-on-surface mb-2">{title}</h3>
-      <p className="text-on-surface-variant text-sm leading-relaxed">{desc}</p>
+      <h3 className="font-headline font-bold text-on-surface mb-2" style={{ fontSize: '1.05rem' }}>{title}</h3>
+      <p style={{ color: '#ababac', fontSize: '0.85rem', lineHeight: 1.65 }}>{desc}</p>
     </div>
-  </motion.div>
+  </FadeUpView>
 );
 
 /* ─── Stat ─── */
 const Stat = ({ value, label, delay }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }} transition={{ delay, duration: 0.5 }}
-    className="flex flex-col items-center gap-1"
-  >
-    <span className="font-headline text-5xl font-bold" style={{ color: '#68d3ff', textShadow: '0 0 30px rgba(104,211,255,0.4)' }}>{value}</span>
-    <span className="text-[10px] uppercase tracking-[0.25em] text-on-surface-variant">{label}</span>
-  </motion.div>
+  <FadeUpView delay={delay} className="stat-item">
+    <span className="stat-value">{value}</span>
+    <span className="stat-label">{label}</span>
+  </FadeUpView>
 );
 
-/* ─────────────────────────────────────────────────────────
+/* ═══════════════════════════════════════
    Main Landing Page
-───────────────────────────────────────────────────────── */
+═══════════════════════════════════════ */
 const LandingPage = ({ onEnter }) => {
   const handleEnter = useCallback(() => onEnter(), [onEnter]);
 
+  const FEATURES = [
+    { icon:'⚡', title:'SD Neural Architect', desc:'AI-powered Order-to-Cash: pricing procedures, access sequences, partner function mapping.', color:'#68d3ff', delay:0 },
+    { icon:'📦', title:'MM-Link Console', desc:'Full Procure-to-Pay: ME51N → ME21N → MIGO → MIRO with live validation.', color:'#b088ff', delay:0.06 },
+    { icon:'💳', title:'FICO-Sync Ledger', desc:'Real-time G/L account determination via VKOA with automated billing-to-finance postings.', color:'#93a2ff', delay:0.12 },
+    { icon:'👁️', title:'Vision Neural Lab', desc:'Upload SAP GUI screenshots — AI detects misconfigurations with spatial heatmap overlays.', color:'#68d3ff', delay:0.18 },
+    { icon:'📇', title:'Master Data Dossier', desc:'Multi-tier Customer & Material Master views: General, Company Code, and Sales Area.', color:'#b088ff', delay:0.24 },
+    { icon:'☁️', title:'Cloud Sync Ledger', desc:'OAuth2-secured Google Sheets, Docs & Calendar integration for real-time persistence.', color:'#93a2ff', delay:0.30 },
+  ];
+
   return (
     <>
-      <ScrollLine />
+      <ScrollProgress />
 
-      {/* Scrollable container — single overflow context = no jitter */}
-      <div id="lp-scroll" className="lp-scroll-container">
+      <div id="lp-root" className="lp-root">
 
-        {/* ── Fixed ambient glows ── */}
-        <div className="fixed inset-0 pointer-events-none z-0" aria-hidden>
-          <div className="lp-glow lp-glow-cyan" />
-          <div className="lp-glow lp-glow-purple" />
-        </div>
+        {/* Ambient gradient orbs — pure CSS, GPU-composited */}
+        <div className="orb orb-cyan" aria-hidden />
+        <div className="orb orb-purple" aria-hidden />
 
-        {/* ── Nav ── */}
+        {/* Particle field — pure CSS keyframes */}
+        <ParticleField />
+
+        {/* ── NAV ── */}
         <nav className="lp-nav">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-3"
-          >
-            <div className="lp-logo-icon">A</div>
-            <span className="font-headline text-[1.1rem] font-bold text-primary tracking-tight">SDAssist Aether</span>
-            <span className="hidden md:block lp-version-badge">V9.1 Titan</span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex items-center gap-6 md:gap-8"
-          >
-            <div className="hidden md:flex gap-8 text-[0.82rem] font-body text-on-surface-variant">
-              {['Product', 'Modules', 'Enterprise'].map(l => (
-                <a key={l} href="#" className="hover:text-primary transition-colors duration-200">{l}</a>
+          <FadeUp delay={0} className="flex items-center gap-3">
+            <div className="logo-icon">A</div>
+            <span className="font-headline font-bold text-primary" style={{ fontSize:'1.05rem', letterSpacing:'-0.02em' }}>SDAssist Aether</span>
+            <span className="version-tag">V9.1 Titan</span>
+          </FadeUp>
+          <FadeUp delay={0.05} className="flex items-center gap-6">
+            <div className="hidden md:flex gap-8" style={{ fontSize:'0.83rem', color:'#ababac' }}>
+              {['Product','Modules','Enterprise'].map(l => (
+                <a key={l} href="#" className="nav-link">{l}</a>
               ))}
             </div>
-            <button onClick={handleEnter} className="lp-btn-primary">
-              Launch App
-            </button>
-          </motion.div>
+            <button onClick={handleEnter} className="btn-primary-sm">Launch App</button>
+          </FadeUp>
         </nav>
 
         {/* ── HERO ── */}
-        <section className="lp-hero">
-          {/* Canvas absolutely behind */}
-          <div className="absolute inset-0 z-0">
-            <NeuralCanvas nodeCount={38} opacity={0.65} />
-          </div>
+        <section className="hero-section">
+          <div className="hero-content">
+            <FadeUp delay={0}>
+              <div className="pill">
+                <span className="pulse-dot" />
+                V9.1 · Full-Stack SAP Digital Twin — Live
+              </div>
+            </FadeUp>
 
-          {/* Decorative SVG rings */}
-          <div className="lp-rings" aria-hidden>
-            <motion.div className="lp-ring lp-ring-1"
-              animate={{ rotate: 360 }} transition={{ duration: 70, repeat: Infinity, ease: 'linear' }}>
-              <svg viewBox="0 0 500 500" className="w-full h-full">
-                <ellipse cx="250" cy="250" rx="220" ry="75" stroke="#68d3ff" strokeWidth="1" fill="none"
-                  strokeDasharray="6 10" transform="rotate(-25 250 250)" opacity="0.6" />
-              </svg>
-            </motion.div>
-            <motion.div className="lp-ring lp-ring-2"
-              animate={{ rotate: -360 }} transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}>
-              <svg viewBox="0 0 500 500" className="w-full h-full">
-                <ellipse cx="250" cy="250" rx="170" ry="60" stroke="#b088ff" strokeWidth="1" fill="none"
-                  strokeDasharray="4 8" transform="rotate(18 250 250)" opacity="0.5" />
-              </svg>
-            </motion.div>
-          </div>
+            <FadeUp delay={0.08}>
+              <h1 className="hero-title">
+                Design Enterprise Logic
+                <br />
+                <span className="gradient-text">at the Speed of Thought.</span>
+              </h1>
+            </FadeUp>
 
-          {/* Hero text */}
-          <div className="lp-hero-content">
-            <motion.div
-              initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="lp-pill"
-            >
-              <span className="lp-pulse-dot" />
-              V9.1 · Full-Stack SAP Digital Twin — Live
-            </motion.div>
+            <FadeUp delay={0.16}>
+              <p className="hero-sub">
+                The world's first AI-native S/4HANA Digital Twin — configure Sales Distribution,
+                Materials Management, Financials and Vision Neural Lab in one Neural OS.
+              </p>
+            </FadeUp>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, delay: 0.08 }}
-              className="lp-headline"
-            >
-              Design Enterprise Logic
-              <br />
-              <span className="lp-gradient-text">at the Speed of Thought.</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.16 }}
-              className="lp-sub"
-            >
-              The world's first AI-native S/4HANA Digital Twin. Configure Sales Distribution,
-              Materials Management, Financials, and Neural Vision — all in one Neural OS.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.24 }}
-              className="lp-cta-row"
-            >
-              <button onClick={handleEnter} className="lp-btn-hero">
+            <FadeUp delay={0.22} className="hero-cta">
+              <button onClick={handleEnter} className="btn-hero">
                 Enter Aether OS
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
-              <button className="lp-btn-ghost">
-                View Architecture
-              </button>
-            </motion.div>
+              <button className="btn-ghost">View Architecture</button>
+            </FadeUp>
           </div>
 
-          {/* 3D UI Preview */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="lp-preview"
-          >
-            {/* fade-to-bg gradient overlay */}
-            <div className="lp-preview-fade" />
-            <div className="lp-preview-inner">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(104,211,255,0.06),transparent_70%)]" />
-              {/* sidebar stub */}
-              <div className="lp-preview-sidebar">
-                {['#68d3ff45', '#b088ff40', '#ababac25', '#ababac20', '#ababac15'].map((bg, i) => (
-                  <div key={i} className="h-9 w-9 rounded-xl" style={{ background: bg }} />
+          {/* UI Preview mockup */}
+          <FadeUp delay={0.3} className="preview-wrap">
+            <div className="preview-fade" />
+            <div className="preview-inner">
+              <div className="preview-sidebar">
+                {['#68d3ff50','#b088ff40','#ababac25','#ababac18','#ababac12'].map((bg,i)=>(
+                  <div key={i} style={{ height:36, width:36, borderRadius:10, background:bg, flexShrink:0 }} />
                 ))}
               </div>
-              {/* canvas area */}
-              <div className="lp-preview-canvas">
-                <svg className="absolute inset-0 w-full h-full" opacity="0.5">
-                  <line x1="18%" y1="48%" x2="50%" y2="38%" stroke="#68d3ff" strokeWidth="1.2" strokeDasharray="5,5" />
-                  <line x1="50%" y1="38%" x2="78%" y2="25%" stroke="#68d3ff" strokeWidth="1.2" strokeDasharray="5,5" />
-                  <line x1="50%" y1="38%" x2="78%" y2="62%" stroke="#b088ff" strokeWidth="1.2" strokeDasharray="5,5" />
-                  <line x1="50%" y1="38%" x2="32%" y2="68%" stroke="#93a2ff" strokeWidth="1.2" strokeDasharray="5,5" />
+              <div className="preview-canvas">
+                <svg className="absolute inset-0 w-full h-full" opacity="0.45">
+                  <line x1="16%" y1="46%" x2="48%" y2="36%" stroke="#68d3ff" strokeWidth="1" strokeDasharray="5,5"/>
+                  <line x1="48%" y1="36%" x2="76%" y2="22%" stroke="#68d3ff" strokeWidth="1" strokeDasharray="5,5"/>
+                  <line x1="48%" y1="36%" x2="76%" y2="60%" stroke="#b088ff" strokeWidth="1" strokeDasharray="5,5"/>
+                  <line x1="48%" y1="36%" x2="30%" y2="64%" stroke="#93a2ff" strokeWidth="1" strokeDasharray="5,5"/>
                 </svg>
                 {[
-                  { l: '12%', t: '40%', c: '#68d3ff', n: 'Sales Org' },
-                  { l: '44%', t: '30%', c: '#b088ff', n: 'Dist. Channel' },
-                  { l: '72%', t: '18%', c: '#93a2ff', n: 'Plant 1000' },
-                  { l: '72%', t: '55%', c: '#93a2ff', n: 'Plant 2000' },
-                  { l: '26%', t: '62%', c: '#68d3ff', n: 'Company Code' },
-                ].map((nd, i) => (
-                  <div key={i} className="absolute" style={{ left: nd.l, top: nd.t, transform: 'translate(-50%,-50%)' }}>
-                    <div className="lp-node-chip" style={{ color: nd.c, borderColor: `${nd.c}50`, background: `${nd.c}14` }}>
-                      {nd.n}
+                  {l:'10%',t:'38%',c:'#68d3ff',n:'Sales Org'},
+                  {l:'42%',t:'28%',c:'#b088ff',n:'Dist. Channel'},
+                  {l:'70%',t:'15%',c:'#93a2ff',n:'Plant 1000'},
+                  {l:'70%',t:'53%',c:'#93a2ff',n:'Plant 2000'},
+                  {l:'24%',t:'58%',c:'#68d3ff',n:'Company Code'},
+                ].map((n,i)=>(
+                  <div key={i} style={{position:'absolute',left:n.l,top:n.t,transform:'translate(-50%,-50%)'}}>
+                    <div className="node-chip" style={{color:n.c,borderColor:`${n.c}50`,background:`${n.c}14`}}>
+                      {n.n}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          </motion.div>
+          </FadeUp>
         </section>
 
         {/* ── STATS ── */}
-        <section className="lp-stats-section">
-          <div className="lp-stats-grid">
-            <Stat value="12+" label="SAP Modules" delay={0} />
-            <Stat value="99%" label="Config Accuracy" delay={0.1} />
-            <Stat value="3×" label="Faster Deploy" delay={0.2} />
-            <Stat value="∞" label="Neural Capacity" delay={0.3} />
-          </div>
+        <section className="stats-section">
+          <Stat value="12+" label="SAP Modules" delay={0} />
+          <Stat value="99%" label="Config Accuracy" delay={0.08} />
+          <Stat value="3×" label="Faster Deploy" delay={0.16} />
+          <Stat value="∞" label="Neural Capacity" delay={0.24} />
         </section>
 
         {/* ── FEATURES ── */}
-        <section className="lp-section">
-          <div className="container mx-auto px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.6 }}
-              className="max-w-2xl mb-16"
-            >
-              <div className="lp-eyebrow">Full-Spectrum Intelligence</div>
-              <h2 className="font-headline text-4xl md:text-5xl font-bold tracking-tighter text-on-surface mb-4">
-                Every SAP Module.<br />One Neural Brain.
-              </h2>
-              <p className="text-on-surface-variant text-base leading-relaxed">
-                From Pricing Procedures (ZIM24) to Procurement cycles, Aether's multi-agent core bridges the gap between business logic and technical precision.
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[
-                { icon: '⚡', title: 'SD Neural Architect', desc: 'AI-powered Order-to-Cash with Condition Technique, Access Sequences & Partner Function mapping.', color: '#68d3ff', delay: 0 },
-                { icon: '📦', title: 'MM-Link Console', desc: 'Full Procure-to-Pay lifecycle from ME51N Purchase Requisition to MIRO Invoice Verification.', color: '#b088ff', delay: 0.07 },
-                { icon: '💳', title: 'FICO-Sync Ledger', desc: 'Real-time G/L account determination via VKOA and automated Accounts Receivable reconciliation.', color: '#93a2ff', delay: 0.14 },
-                { icon: '👁️', title: 'Vision Neural Lab', desc: 'Upload SAP GUI screenshots — AI detects misconfigurations with spatial heatmap overlays.', color: '#68d3ff', delay: 0.21 },
-                { icon: '📇', title: 'Master Data Dossier', desc: 'Multi-tier Customer & Material Master views: General, Company Code, and Sales Area intelligence.', color: '#b088ff', delay: 0.28 },
-                { icon: '☁️', title: 'Cloud Sync Ledger', desc: 'OAuth2-secured Google Sheets, Docs, and Calendar integration for enterprise data persistence.', color: '#93a2ff', delay: 0.35 },
-              ].map(f => <FeatureCard key={f.title} {...f} />)}
-            </div>
+        <section className="features-section">
+          <FadeUpView className="features-header">
+            <div className="eyebrow">Full-Spectrum Intelligence</div>
+            <h2 className="font-headline font-bold text-on-surface" style={{ fontSize:'clamp(2rem,4vw,3.2rem)', letterSpacing:'-0.03em', lineHeight:1.15, marginBottom:'0.75rem' }}>
+              Every SAP Module.<br />One Neural Brain.
+            </h2>
+            <p style={{ color:'#ababac', maxWidth:520, lineHeight:1.65, fontSize:'0.95rem' }}>
+              From Pricing Procedures (ZIM24) to Procurement cycles, Aether's multi-agent core bridges business logic and technical precision.
+            </p>
+          </FadeUpView>
+          <div className="features-grid">
+            {FEATURES.map(f => <FeatureCard key={f.title} {...f} />)}
           </div>
         </section>
 
-        {/* ── DEEP DIVE ── */}
-        <section className="lp-section">
-          <div className="container mx-auto px-6">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="lp-cta-block"
-            >
-              <div className="lp-eyebrow" style={{ justifyContent: 'center', marginBottom: '1.5rem' }}>Ready to Deploy?</div>
-              <h2 className="font-headline text-4xl md:text-6xl font-bold tracking-tighter mb-5 text-center"
-                style={{ textShadow: '0 0 60px rgba(104,211,255,0.25)' }}>
-                Your Digital Twin<br />Awaits Activation.
-              </h2>
-              <p className="text-on-surface-variant text-base max-w-lg text-center mb-10 mx-auto leading-relaxed">
-                Step inside Aether OS. Configure S/4HANA architecture faster, smarter, and with full neural precision.
-              </p>
-              <button onClick={handleEnter} className="lp-btn-cta">
-                Initialize Aether OS →
-              </button>
-            </motion.div>
-          </div>
+        {/* ── CTA BLOCK ── */}
+        <section className="cta-section">
+          <FadeUpView className="cta-block">
+            <div className="eyebrow" style={{ justifyContent:'center' }}>Ready to Deploy?</div>
+            <h2 className="font-headline font-bold text-on-surface" style={{ fontSize:'clamp(2rem,4.5vw,3.5rem)', letterSpacing:'-0.035em', lineHeight:1.1, marginBottom:'1rem', textAlign:'center' }}>
+              Your Digital Twin<br />Awaits Activation.
+            </h2>
+            <p style={{ color:'#ababac', maxWidth:420, textAlign:'center', lineHeight:1.65, fontSize:'0.95rem', marginBottom:'2.5rem' }}>
+              Step inside Aether OS. Configure S/4HANA architecture faster, smarter, with full neural precision.
+            </p>
+            <button onClick={handleEnter} className="btn-cta">
+              Initialize Aether OS →
+            </button>
+          </FadeUpView>
         </section>
 
         {/* ── FOOTER ── */}
         <footer className="lp-footer">
           <div className="flex items-center gap-3">
-            <div className="lp-logo-icon">A</div>
-            <span className="font-headline font-bold text-primary text-sm">SDAssist Aether</span>
-            <span className="lp-version-badge">V9.1</span>
+            <div className="logo-icon">A</div>
+            <span className="font-headline font-bold text-primary" style={{ fontSize:'0.9rem' }}>SDAssist Aether</span>
+            <span className="version-tag">V9.1</span>
           </div>
-          <span className="lp-footer-copy">Google Antigravity Hackathon 2026 · Neural Editorial System</span>
-          <div className="flex gap-6 text-[11px] uppercase tracking-widest text-on-surface-variant/40">
-            {['Status', 'Docs', 'Privacy'].map(l => (
-              <a key={l} href="#" className="hover:text-primary transition-colors">{l}</a>
+          <span style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.2em', color:'rgba(171,171,172,0.35)' }}>
+            Google Antigravity Hackathon 2026 · Neural Editorial System
+          </span>
+          <div style={{ display:'flex', gap:24, fontSize:10, textTransform:'uppercase', letterSpacing:'0.2em', color:'rgba(171,171,172,0.35)' }}>
+            {['Status','Docs','Privacy'].map(l => (
+              <a key={l} href="#" className="footer-link">{l}</a>
             ))}
           </div>
         </footer>
-
       </div>
 
-      {/* ── All CSS in one block, no inline styles scattered ── */}
+      {/* ══════════════════════════════════════════════
+          ALL STYLES — GPU-composited, no layout thrash
+      ══════════════════════════════════════════════ */}
       <style>{`
-        /* Scrollable container */
-        .lp-scroll-container {
-          position: absolute;
-          inset: 0;
-          overflow-y: auto;
-          overflow-x: hidden;
+        /* ── Root ── */
+        .lp-root {
+          position: absolute; inset: 0;
+          overflow-y: auto; overflow-x: hidden;
           background: #0d0e0f;
-          scroll-behavior: smooth;
           -webkit-overflow-scrolling: touch;
         }
 
-        /* Ambient glows */
-        .lp-glow {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(100px);
-          pointer-events: none;
+        /* ── Ambient orbs (static CSS, zero JS) ── */
+        .orb {
+          position: fixed; border-radius: 50%;
+          pointer-events: none; z-index: 0;
+          will-change: opacity;
         }
-        .lp-glow-cyan {
-          top: -15%; right: -10%;
-          width: 65vw; height: 65vw;
-          background: radial-gradient(circle, rgba(104,211,255,0.09) 0%, transparent 70%);
-        }
-        .lp-glow-purple {
-          bottom: -20%; left: -10%;
+        .orb-cyan {
           width: 55vw; height: 55vw;
-          background: radial-gradient(circle, rgba(176,136,255,0.07) 0%, transparent 70%);
+          top: -15%; right: -12%;
+          background: radial-gradient(circle, rgba(104,211,255,0.1) 0%, transparent 70%);
+          filter: blur(80px);
+        }
+        .orb-purple {
+          width: 45vw; height: 45vw;
+          bottom: -10%; left: -8%;
+          background: radial-gradient(circle, rgba(176,136,255,0.08) 0%, transparent 70%);
+          filter: blur(80px);
         }
 
-        /* Nav */
-        .lp-nav {
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          height: 64px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 2rem;
-          z-index: 100;
-          background: rgba(13,14,15,0.85);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(71,72,73,0.2);
-          will-change: transform;
-        }
-        .lp-logo-icon {
-          width: 32px; height: 32px;
-          border-radius: 8px;
-          background: rgba(104,211,255,0.15);
-          border: 1px solid rgba(104,211,255,0.35);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #68d3ff;
-          font-weight: 700;
-          font-size: 0.9rem;
-          font-family: 'Space Grotesk', sans-serif;
-          flex-shrink: 0;
-        }
-        .lp-version-badge {
-          font-size: 9px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-          color: rgba(171,171,172,0.35);
-          font-family: 'Inter', sans-serif;
-        }
-
-        /* Buttons */
-        .lp-btn-primary {
-          padding: 8px 20px;
-          border-radius: 999px;
-          background: #68d3ff;
-          color: #00465b;
-          font-family: 'Space Grotesk', sans-serif;
-          font-weight: 700;
-          font-size: 0.82rem;
-          border: none;
-          cursor: pointer;
-          transition: transform 0.15s ease, box-shadow 0.2s ease;
-        }
-        .lp-btn-primary:hover {
-          transform: scale(1.04);
-          box-shadow: 0 0 24px rgba(104,211,255,0.45);
-        }
-        .lp-btn-primary:active { transform: scale(0.97); }
-
-        .lp-btn-hero {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 16px 36px;
-          border-radius: 1.25rem;
-          background: #68d3ff;
-          color: #003c4f;
-          font-family: 'Space Grotesk', sans-serif;
-          font-weight: 700;
-          font-size: 1.05rem;
-          border: none;
-          cursor: pointer;
-          transition: transform 0.18s ease, box-shadow 0.2s ease;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.35);
-        }
-        .lp-btn-hero:hover {
-          transform: translateY(-2px) scale(1.02);
-          box-shadow: 0 0 32px rgba(104,211,255,0.4), 0 12px 40px rgba(0,0,0,0.45);
-        }
-        .lp-btn-hero:active { transform: translateY(0) scale(0.98); }
-
-        .lp-btn-ghost {
-          padding: 16px 36px;
-          border-radius: 1.25rem;
-          border: 1px solid rgba(71,72,73,0.35);
-          background: transparent;
-          color: rgba(255,255,255,0.85);
-          font-family: 'Space Grotesk', sans-serif;
-          font-weight: 600;
-          font-size: 1.05rem;
-          cursor: pointer;
-          transition: border-color 0.2s, background 0.2s, transform 0.15s;
-        }
-        .lp-btn-ghost:hover {
-          border-color: rgba(104,211,255,0.4);
-          background: rgba(104,211,255,0.06);
-          transform: translateY(-2px);
-        }
-        .lp-btn-ghost:active { transform: translateY(0); }
-
-        .lp-btn-cta {
-          padding: 18px 48px;
-          border-radius: 1.5rem;
-          background: linear-gradient(135deg, #68d3ff, #b088ff);
-          color: #001630;
-          font-family: 'Space Grotesk', sans-serif;
-          font-weight: 700;
-          font-size: 1.1rem;
-          border: none;
-          cursor: pointer;
-          transition: transform 0.18s ease, box-shadow 0.2s ease;
-          box-shadow: 0 0 30px rgba(104,211,255,0.3), 0 16px 40px rgba(0,0,0,0.4);
-        }
-        .lp-btn-cta:hover {
-          transform: translateY(-3px) scale(1.02);
-          box-shadow: 0 0 50px rgba(104,211,255,0.4), 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .lp-btn-cta:active { transform: translateY(0) scale(0.98); }
-
-        /* Hero */
-        .lp-hero {
-          position: relative;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding-top: 64px;
+        /* ── Particles — pure CSS, GPU transform only ── */
+        .particle-field {
+          position: fixed; inset: 0;
+          pointer-events: none; z-index: 1;
           overflow: hidden;
         }
-        .lp-rings {
+        .particle {
           position: absolute;
-          right: -60px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 520px;
-          height: 520px;
-          pointer-events: none;
-          opacity: 0.18;
-        }
-        .lp-ring {
-          position: absolute;
-          inset: 0;
-        }
-        .lp-ring-1, .lp-ring-2 { will-change: transform; }
-
-        .lp-hero-content {
-          position: relative;
-          z-index: 10;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 0 1.5rem;
-          max-width: 62rem;
-          margin: 0 auto;
-        }
-        .lp-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 16px;
-          border-radius: 999px;
-          border: 1px solid rgba(104,211,255,0.25);
-          background: rgba(104,211,255,0.07);
-          color: #68d3ff;
-          font-size: 10px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.18em;
-          font-family: 'Inter', sans-serif;
-          margin-bottom: 2rem;
-        }
-        .lp-pulse-dot {
-          display: inline-block;
-          width: 7px; height: 7px;
           border-radius: 50%;
-          background: #68d3ff;
-          animation: lpPulse 2.2s ease infinite;
+          opacity: 0;
+          animation: floatParticle linear infinite;
+          will-change: transform, opacity;
+        }
+        @keyframes floatParticle {
+          0%   { transform: translateY(0px) scale(1); opacity: 0; }
+          15%  { opacity: 0.6; }
+          85%  { opacity: 0.3; }
+          100% { transform: translateY(-80px) scale(0.6); opacity: 0; }
+        }
+
+        /* ── Nav ── */
+        .lp-nav {
+          position: fixed; top: 0; left: 0; right: 0; height: 64px;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 2rem; z-index: 100;
+          background: rgba(13,14,15,0.88);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(71,72,73,0.2);
+        }
+        .logo-icon {
+          width: 30px; height: 30px; border-radius: 8px;
+          background: rgba(104,211,255,0.15);
+          border: 1px solid rgba(104,211,255,0.3);
+          display: flex; align-items: center; justify-content: center;
+          color: #68d3ff; font-weight: 700; font-size: 0.85rem;
+          font-family: 'Space Grotesk', sans-serif; flex-shrink: 0;
+        }
+        .version-tag {
+          font-size: 9px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.2em; color: rgba(171,171,172,0.32);
+          font-family: 'Inter', sans-serif; display: none;
+        }
+        @media (min-width: 768px) { .version-tag { display: block; } }
+        .nav-link { transition: color 0.18s ease; }
+        .nav-link:hover { color: #68d3ff; }
+
+        /* ── Buttons ── */
+        .btn-primary-sm {
+          padding: 7px 18px; border-radius: 999px;
+          background: #68d3ff; color: #003c4f;
+          font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.8rem;
+          border: none; cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.18s ease;
+          will-change: transform;
+        }
+        .btn-primary-sm:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(104,211,255,0.4); }
+        .btn-primary-sm:active { transform: scale(0.96); }
+
+        .btn-hero {
+          display: inline-flex; align-items: center; gap: 10px;
+          padding: 15px 34px; border-radius: 1.2rem;
+          background: #68d3ff; color: #003c4f;
+          font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem;
+          border: none; cursor: pointer;
+          box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+          transition: transform 0.18s ease, box-shadow 0.2s ease;
+          will-change: transform;
+        }
+        .btn-hero:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(104,211,255,0.35), 0 12px 36px rgba(0,0,0,0.4); }
+        .btn-hero:active { transform: translateY(0) scale(0.98); }
+
+        .btn-ghost {
+          padding: 15px 34px; border-radius: 1.2rem;
+          border: 1px solid rgba(71,72,73,0.4); background: transparent;
+          color: rgba(255,255,255,0.8); font-family: 'Space Grotesk', sans-serif;
+          font-weight: 600; font-size: 1rem; cursor: pointer;
+          transition: border-color 0.18s, background 0.18s, transform 0.15s;
+          will-change: transform;
+        }
+        .btn-ghost:hover { border-color: rgba(104,211,255,0.38); background: rgba(104,211,255,0.06); transform: translateY(-2px); }
+        .btn-ghost:active { transform: translateY(0); }
+
+        .btn-cta {
+          padding: 17px 46px; border-radius: 1.4rem;
+          background: linear-gradient(135deg, #68d3ff, #b088ff);
+          color: #001630; font-family: 'Space Grotesk', sans-serif;
+          font-weight: 700; font-size: 1.05rem; border: none; cursor: pointer;
+          box-shadow: 0 0 28px rgba(104,211,255,0.28), 0 14px 36px rgba(0,0,0,0.4);
+          transition: transform 0.18s ease, box-shadow 0.2s ease;
+          will-change: transform;
+        }
+        .btn-cta:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 0 44px rgba(104,211,255,0.38), 0 18px 44px rgba(0,0,0,0.5); }
+        .btn-cta:active { transform: scale(0.98); }
+
+        /* ── Hero ── */
+        .hero-section {
+          position: relative; z-index: 10;
+          min-height: 100vh; padding-top: 80px;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          padding-inline: 1.5rem;
+        }
+        .hero-content {
+          max-width: 820px; text-align: center;
+          display: flex; flex-direction: column; align-items: center;
+        }
+        .pill {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 6px 14px; border-radius: 999px;
+          border: 1px solid rgba(104,211,255,0.22);
+          background: rgba(104,211,255,0.07);
+          color: #68d3ff; font-size: 10px; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.18em;
+          font-family: 'Inter', sans-serif; margin-bottom: 1.75rem;
+        }
+        .pulse-dot {
+          display: inline-block; width: 6px; height: 6px;
+          border-radius: 50%; background: #68d3ff;
+          animation: lpPulse 2.4s ease infinite;
+          will-change: opacity, transform;
         }
         @keyframes lpPulse {
           0%,100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.7); }
+          50% { opacity: 0.4; transform: scale(0.7); }
         }
-        .lp-headline {
-          font-family: 'Space Grotesk', sans-serif;
-          font-weight: 700;
-          letter-spacing: -0.04em;
-          line-height: 1.04;
-          color: #fff;
-          margin-bottom: 1.25rem;
-          font-size: clamp(2.6rem, 7vw, 6rem);
-          text-shadow: 0 0 80px rgba(104,211,255,0.15);
+        .hero-title {
+          font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+          letter-spacing: -0.04em; line-height: 1.06;
+          color: #fff; margin-bottom: 1.1rem;
+          font-size: clamp(2.4rem, 6.5vw, 5.8rem);
         }
-        .lp-gradient-text {
+        .gradient-text {
           background: linear-gradient(90deg, #68d3ff 0%, #b088ff 50%, #68d3ff 100%);
           background-size: 200%;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
           background-clip: text;
-          animation: lpGrad 6s ease infinite;
+          animation: gradShift 7s ease infinite;
+          will-change: background-position;
         }
-        @keyframes lpGrad {
+        @keyframes gradShift {
           0%,100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
         }
-        .lp-sub {
-          color: #ababac;
-          font-size: 1.05rem;
-          max-width: 36rem;
-          line-height: 1.7;
-          font-family: 'Inter', sans-serif;
-          font-weight: 300;
-          margin-bottom: 2.5rem;
+        .hero-sub {
+          color: #ababac; font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+          max-width: 38rem; line-height: 1.7;
+          font-family: 'Inter', sans-serif; font-weight: 300;
+          margin-bottom: 2.2rem;
         }
-        .lp-cta-row {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          margin-bottom: 4.5rem;
+        .hero-cta {
+          display: flex; flex-wrap: wrap; align-items: center;
+          justify-content: center; gap: 1rem; margin-bottom: 4rem;
         }
 
-        /* Preview card */
-        .lp-preview {
-          position: relative;
-          z-index: 10;
-          width: 100%;
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 0 1.5rem 0;
+        /* ── Preview ── */
+        .preview-wrap {
+          position: relative; z-index: 10; width: 100%;
+          max-width: 860px; padding-inline: 1rem;
           will-change: transform, opacity;
         }
-        .lp-preview-fade {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to top, #0d0e0f 0%, transparent 50%);
-          z-index: 2;
-          pointer-events: none;
-          border-radius: 2rem;
+        .preview-fade {
+          position: absolute; inset: 0; z-index: 2; pointer-events: none;
+          background: linear-gradient(to top, #0d0e0f 0%, transparent 55%);
+          border-radius: 1.8rem;
         }
-        .lp-preview-inner {
-          position: relative;
-          border-radius: 2rem;
-          overflow: hidden;
-          border: 1px solid rgba(71,72,73,0.3);
-          box-shadow: 0 40px 100px rgba(0,0,0,0.75);
+        .preview-inner {
+          border-radius: 1.8rem; overflow: hidden;
+          border: 1px solid rgba(71,72,73,0.28);
+          box-shadow: 0 32px 80px rgba(0,0,0,0.7);
           background: #121315;
-          display: flex;
-          gap: 1rem;
-          padding: 1.5rem;
-          min-height: 280px;
+          display: flex; gap: 1rem; padding: 1.25rem;
+          min-height: 240px;
         }
-        .lp-preview-sidebar {
-          width: 48px;
-          background: rgba(24,26,27,0.8);
-          border-radius: 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          padding: 10px;
-          border: 1px solid rgba(71,72,73,0.2);
-          flex-shrink: 0;
+        .preview-sidebar {
+          width: 44px; background: rgba(24,26,27,0.7);
+          border-radius: 0.9rem; display: flex;
+          flex-direction: column; gap: 7px; padding: 9px;
+          border: 1px solid rgba(71,72,73,0.15); flex-shrink: 0;
         }
-        .lp-preview-canvas {
-          flex: 1;
-          background: rgba(24,26,27,0.6);
-          border-radius: 1rem;
-          border: 1px solid rgba(71,72,73,0.15);
-          position: relative;
-          overflow: hidden;
+        .preview-canvas {
+          flex: 1; background: rgba(24,26,27,0.55);
+          border-radius: 0.9rem; border: 1px solid rgba(71,72,73,0.12);
+          position: relative; overflow: hidden;
         }
-        .lp-node-chip {
-          font-family: 'Space Grotesk', monospace;
-          font-size: 9px;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 8px;
-          border-width: 1px;
-          border-style: solid;
-          white-space: nowrap;
+        .node-chip {
+          font-family: 'Space Grotesk', sans-serif; font-size: 9px;
+          font-weight: 700; padding: 3px 9px; border-radius: 7px;
+          border: 1px solid; white-space: nowrap;
         }
 
-        /* Stats */
-        .lp-stats-section {
-          padding: 5rem 1.5rem;
-          position: relative;
-          z-index: 10;
+        /* ── Stats ── */
+        .stats-section {
+          position: relative; z-index: 10;
+          display: grid; grid-template-columns: repeat(2, 1fr);
+          gap: 2.5rem; padding: 4rem 2rem;
+          max-width: 860px; margin: 0 auto;
           border-top: 1px solid rgba(71,72,73,0.12);
         }
-        .lp-stats-grid {
-          max-width: 900px;
-          margin: 0 auto;
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 3rem;
+        @media (min-width: 640px) {
+          .stats-section { grid-template-columns: repeat(4, 1fr); }
         }
-        @media (min-width: 768px) {
-          .lp-stats-grid { grid-template-columns: repeat(4, 1fr); }
+        .stat-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .stat-value {
+          font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+          font-size: clamp(2.2rem, 5vw, 3rem); color: #68d3ff;
+          filter: drop-shadow(0 0 16px rgba(104,211,255,0.35));
         }
-
-        /* Sections */
-        .lp-section {
-          padding: 6rem 0;
-          position: relative;
-          z-index: 10;
+        .stat-label {
+          font-size: 10px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.22em; color: rgba(171,171,172,0.5);
+          font-family: 'Inter', sans-serif;
         }
 
-        /* Feature card CSS hover (GPU, no React state) */
-        .feature-card {
-          transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), border-color 0.28s ease, background 0.28s ease;
-          cursor: default;
+        /* ── Features ── */
+        .features-section {
+          position: relative; z-index: 10;
+          padding: 5rem 1.5rem; max-width: 1100px; margin: 0 auto;
         }
-        .feature-card:hover {
-          transform: translateY(-6px) translateZ(0);
+        .features-header { max-width: 540px; margin-bottom: 3rem; }
+        .features-grid {
+          display: grid; gap: 1.25rem;
+          grid-template-columns: repeat(1, 1fr);
+        }
+        @media (min-width: 640px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .features-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .feat-card {
+          position: relative; padding: 1.75rem; border-radius: 1.6rem;
+          border: 1px solid rgba(71,72,73,0.12);
+          background: rgba(18,19,21,0.6);
+          display: flex; flex-direction: column; gap: 1rem;
+          overflow: hidden; cursor: default;
+          transition: transform 0.24s cubic-bezier(0.22,1,0.36,1),
+                      border-color 0.24s ease, background 0.24s ease;
+          will-change: transform;
+        }
+        .feat-card:hover {
+          transform: translateY(-5px) translateZ(0);
           border-color: rgba(104,211,255,0.2);
-          background: rgba(30,32,33,0.7);
+          background: rgba(30,32,33,0.65);
         }
-        .card-glow {
-          position: absolute;
-          top: -30px; right: -30px;
-          width: 120px; height: 120px;
-          border-radius: 50%;
-          filter: blur(40px);
-          opacity: 0;
-          transition: opacity 0.4s ease;
-          pointer-events: none;
+        .feat-glow {
+          position: absolute; top: -24px; right: -24px;
+          width: 100px; height: 100px; border-radius: 50%;
+          filter: blur(36px); opacity: 0;
+          transition: opacity 0.35s ease; pointer-events: none;
         }
-        .feature-card:hover .card-glow { opacity: 0.18; }
+        .feat-card:hover .feat-glow { opacity: 0.16; }
+        .feat-icon {
+          width: 52px; height: 52px; border-radius: 14px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.4rem; border: 1px solid; flex-shrink: 0;
+          transition: transform 0.2s ease;
+        }
+        .feat-card:hover .feat-icon { transform: scale(1.08); }
 
-        /* Eyebrow label */
-        .lp-eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-family: 'Inter', sans-serif;
-          font-size: 10px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.25em;
-          color: #68d3ff;
-          margin-bottom: 1rem;
+        /* ── Eyebrow ── */
+        .eyebrow {
+          display: flex; align-items: center; gap: 6px;
+          font-family: 'Inter', sans-serif; font-size: 10px;
+          font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.25em; color: #68d3ff;
+          margin-bottom: 0.75rem;
         }
 
-        /* CTA block */
-        .lp-cta-block {
-          border-radius: 3rem;
-          border: 1px solid rgba(104,211,255,0.2);
+        /* ── CTA ── */
+        .cta-section {
+          position: relative; z-index: 10;
+          padding: 4rem 1.5rem 6rem; max-width: 900px; margin: 0 auto;
+        }
+        .cta-block {
+          border-radius: 2.5rem;
+          border: 1px solid rgba(104,211,255,0.18);
           background: linear-gradient(135deg, rgba(104,211,255,0.07), rgba(176,136,255,0.04), rgba(13,14,15,0.9));
-          padding: 5rem 2rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          overflow: hidden;
+          padding: 4rem 2rem;
+          display: flex; flex-direction: column; align-items: center;
         }
 
-        /* Footer */
+        /* ── Footer ── */
         .lp-footer {
-          position: relative;
-          z-index: 10;
+          position: relative; z-index: 10;
           border-top: 1px solid rgba(71,72,73,0.12);
-          padding: 2.5rem 2rem;
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
+          padding: 2rem 2rem;
+          display: flex; flex-wrap: wrap; align-items: center;
+          justify-content: space-between; gap: 0.75rem;
+          max-width: 1100px; margin: 0 auto;
         }
-        .lp-footer-copy {
-          font-family: 'Inter', sans-serif;
-          font-size: 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-          color: rgba(171,171,172,0.35);
-        }
+        .footer-link { transition: color 0.18s ease; }
+        .footer-link:hover { color: #68d3ff; }
       `}</style>
     </>
   );
