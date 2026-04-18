@@ -51,7 +51,6 @@ const AetherLayout = () => {
   return (
     <div className="flex h-screen bg-background text-on-surface font-body overflow-hidden">
       <div className="gradient-mesh"></div>
-      <SafetyLog />
       <Sidebar />
       <ProjectAlpha isOpen={isAlphaOpen} onClose={() => setIsAlphaOpen(false)} />
       <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(true)} />
