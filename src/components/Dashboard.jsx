@@ -166,20 +166,30 @@ const Dashboard = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Ask Agent Aether..."
-                className="w-full bg-surface-container-highest border border-outline-variant/20 rounded-xl py-4 pl-12 pr-10 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all placeholder:text-on-surface-variant/40"
+                className="w-full bg-surface-container-highest border border-outline-variant/20 rounded-xl py-4 pl-12 pr-20 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all placeholder:text-on-surface-variant/40"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 group-focus-within:text-primary transition-colors">
                 <Search size={18} />
               </div>
-              <button 
-                id="voice-command-btn"
-                aria-label="Activate Neural Voice"
-                type="button"
-                onClick={startVoiceControl}
-                className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-all ${isListening ? 'bg-primary/20 text-primary animate-pulse' : 'text-on-surface-variant/40 hover:text-primary'}`}
-              >
-                {isListening ? <Mic size={16} /> : <MicOff size={16} />}
-              </button>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <button 
+                  id="voice-command-btn"
+                  aria-label="Activate Neural Voice"
+                  type="button"
+                  onClick={startVoiceControl}
+                  className={`p-2 rounded-lg transition-all ${isListening ? 'bg-primary/20 text-primary animate-pulse' : 'text-on-surface-variant/40 hover:text-primary'}`}
+                >
+                  {isListening ? <Mic size={16} /> : <MicOff size={16} />}
+                </button>
+                <button
+                  type="submit"
+                  aria-label="Send Requirement"
+                  disabled={!inputValue.trim() || isProcessing}
+                  className="p-2 rounded-lg bg-primary text-on-primary hover:bg-primary-dim transition-all disabled:opacity-50 disabled:cursor-not-allowed group-focus-within:shadow-[0_0_15px_rgba(104,211,255,0.4)]"
+                >
+                  <Rocket size={16} />
+                </button>
+              </div>
             </div>
           </form>
         </section>

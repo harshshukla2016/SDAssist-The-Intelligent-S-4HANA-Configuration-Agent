@@ -36,7 +36,8 @@ const TCodeSearch = ({ tcode }) => {
           <div className="glass-panel w-full max-w-md p-6 rounded-2xl border border-outline-variant/20 shadow-2xl relative">
             <button 
               onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors"
+              aria-label="Close Deep Research Overlay"
+              className="absolute top-4 right-4 p-2 text-on-surface-variant hover:text-primary transition-colors bg-surface-container rounded-lg hover:bg-surface-container-high"
             >
               <X size={20} />
             </button>
