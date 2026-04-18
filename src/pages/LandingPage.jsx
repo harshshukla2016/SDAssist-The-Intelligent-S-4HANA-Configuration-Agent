@@ -196,12 +196,7 @@ const LandingPage = ({ onEnter }) => {
     { icon:'🔒', title:'OAuth2 Secured', desc:'Google Identity Services OAuth2 — no passwords stored, token-based auth for all Workspace APIs.' },
     { icon:'⚡', title:'Edge Deployed', desc:'Vercel Edge Network — globally distributed CDN with sub-50ms TTFB across all continents.' },
     { icon:'🤖', title:'Llama 3.3 70B', desc:'Powered by Meta\'s Llama 3.3 70B via Groq\'s inference API — state-of-the-art SAP domain reasoning.' },
-    { icon:'📦', title:'< 1MB Total', desc:'Entire application under 1MB. 4-chunk code splitting with 1-year immutable asset caching.' },
-    { icon:'🌐', title:'SEO Optimized', desc:'Full Schema JSON-LD, sitemap, robots.txt, llms.txt, and GEO-optimized for AI search engines.' },
-    { icon:'🏆', title:'Hackathon Built', desc:'Built for Google Antigravity Hackathon 2026 — designed to enterprise production standards.' },
-  ];
-
-  return (
+    { icon:'🏆', title:'Enterprise Standards', desc:'Engineered to modern production standards with robust architecture, minimal dependencies, and pure CSS GPU animations.' },
     <>
       <ScrollProgress/>
 
@@ -354,8 +349,8 @@ const LandingPage = ({ onEnter }) => {
               <div className="eyebrow">Enterprise</div>
               <h2 className="lp-h2">Production-Grade.<br/>Enterprise-Ready.</h2>
               <p className="lp-section-sub">
-                Built to hackathon submission standards but designed with production architecture —
-                secure, fast, SEO-optimized, and built for scale.
+                Designed with a strict production architecture —
+                secure, exceptionally fast, SEO-optimized, and built for immense scale.
               </p>
             </FadeUpView>
 
@@ -411,8 +406,6 @@ const LandingPage = ({ onEnter }) => {
                     { label:'SAP Modules Covered', val:'SD · MM · FICO · Vision' },
                     { label:'AI Model', val:'Llama 3.3 70B via Groq' },
                     { label:'Google Integration', val:'Sheets · Calendar · Docs' },
-                    { label:'Build Target', val:'Google Antigravity Hackathon 2026' },
-                    { label:'Repository Size', val:'< 1MB (Hackathon Compliant)' },
                     { label:'Deployment', val:'Vercel Edge · Global CDN' },
                   ].map(r => (
                     <div key={r.label} className="lp-profile-stat-row">
@@ -420,6 +413,11 @@ const LandingPage = ({ onEnter }) => {
                       <span className="font-headline font-bold text-on-surface" style={{ fontSize:'0.82rem' }}>{r.val}</span>
                     </div>
                   ))}
+                  <div className="mt-6 pt-6 border-t border-white/10 flex justify-center">
+                    <a href="https://harsh-kumar-shukla-portfolio.vercel.app/" target="_blank" rel="noopener noreferrer" className="lp-btn-sm" style={{ padding: '10px 24px', background: 'transparent', border: '1px solid rgba(104,211,255,0.4)', color: '#68d3ff' }}>
+                      View Creator Portfolio ↗
+                    </a>
+                  </div>
                 </FadeUpView>
               </div>
             </div>
@@ -464,7 +462,7 @@ const LandingPage = ({ onEnter }) => {
             <button onClick={handleEnter} className="lp-footer-link" style={{ color:'#68d3ff' }}>Launch App ↗</button>
           </div>
           <div style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.18em', color:'rgba(171,171,172,0.3)' }}>
-            © 2026 SDAssist · Google Antigravity Hackathon
+            © 2026 SDAssist Aether
           </div>
         </footer>
       </div>

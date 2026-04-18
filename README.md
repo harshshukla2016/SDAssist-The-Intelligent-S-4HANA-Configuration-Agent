@@ -93,5 +93,5 @@ Aether is designed for **Scalable Intelligence**:
 ---
 
 <div align="center">
-  <sub>Built for the Google Antigravity Hackathon • V7.0 High-Fidelity Release</sub>
+  <sub>Built by <a href="https://harsh-kumar-shukla-portfolio.vercel.app/" target="_blank">Harsh Shukla</a> • V9.6 High-Fidelity Release</sub>
 </div>
