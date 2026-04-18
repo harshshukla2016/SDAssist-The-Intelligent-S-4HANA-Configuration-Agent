@@ -23,7 +23,7 @@ import MasterDataPage from '../pages/MasterDataPage';
 import ProjectAlpha from './ProjectAlpha';
 import NeuralConfig from './NeuralConfig';
 
-const AetherLayout = () => {
+const AetherLayout = ({ onExit }) => {
   const { activePage } = useAppState();
   const [isAlphaOpen, setIsAlphaOpen] = React.useState(false);
   const [isNeuralOpen, setIsNeuralOpen] = React.useState(false);
@@ -55,13 +55,14 @@ const AetherLayout = () => {
       <ProjectAlpha isOpen={isAlphaOpen} onClose={() => setIsAlphaOpen(false)} />
       <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(true)} />
       
-      <Header 
-        onOpenAlpha={() => setIsAlphaOpen(true)} 
-        onOpenNeural={() => setIsNeuralOpen(true)} 
-      />
-      
-      <div className="flex-1 flex flex-col pl-0 md:pl-20 transition-all duration-300 relative overflow-hidden">
-        <main className="flex-1 overflow-hidden relative w-full h-full">
+      <div className="flex-1 flex flex-col pl-0 md:pl-20 transition-all duration-300">
+        <Header 
+          onOpenAlpha={() => setIsAlphaOpen(true)} 
+          onOpenNeural={() => setIsNeuralOpen(true)} 
+          onExit={onExit}
+        />
+        
+        <main className="flex-1 overflow-hidden relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={activePage}

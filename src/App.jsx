@@ -6,8 +6,21 @@ import LandingPage from './pages/LandingPage';
 import ErrorBoundary from './ErrorBoundary';
 
 function App() {
-  const [entered, setEntered] = useState(false);
-  const handleEnter = useCallback(() => setEntered(true), []);
+  const [entered, setEntered] = useState(() => window.location.hash === '#os');
+
+  React.useEffect(() => {
+    const handleHash = () => setEntered(window.location.hash === '#os');
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    window.location.hash = 'os';
+  }, []);
+
+  const handleExit = useCallback(() => {
+    window.location.hash = '';
+  }, []);
 
   return (
     <StateProvider>
@@ -32,7 +45,7 @@ function App() {
               style={{ position: 'absolute', inset: 0 }}
             >
               <ErrorBoundary>
-                <AetherLayout />
+                <AetherLayout onExit={handleExit} />
               </ErrorBoundary>
             </motion.div>
           )}
