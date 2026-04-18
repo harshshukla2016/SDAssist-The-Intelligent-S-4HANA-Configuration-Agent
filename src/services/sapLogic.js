@@ -4,7 +4,7 @@
  * Refactored to use Groq (Llama 3) for high performance and reliability.
  */
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const LOCAL_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
 /**
  * Generates a technical SAP configuration roadmap using Groq.
@@ -18,10 +18,6 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
   }
 
   try {
-    if (!GROQ_API_KEY) {
-      console.warn("VITE_GROQ_API_KEY missing. Returning fallback.");
-      return getDefaultRoadmap(requirement);
-    }
 
     const systemInstruction = `
       You are an ${neuralConfig.persona || 'Expert SAP Architect'}. 
@@ -65,23 +61,37 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
       Context Rule: Respect the 'Condition Technique' (Specific -> General). Use Access Sequences for automatic pricing.
     `;
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        messages: [
-          { role: "system", content: systemInstruction },
-          { role: "user", content: `Requirement: ${requirement} (Output should be valid JSON)` }
-        ],
-        model: "llama-3.3-70b-versatile",
-        response_format: { type: "json_object" },
-        temperature: neuralConfig.temperature || 0.2,
-        top_p: neuralConfig.topP || 0.8
-      })
-    });
+    const messages = [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: `Requirement: ${requirement} (Output should be valid JSON)` }
+    ];
+
+    let response;
+
+    // Local fallback for developers bypassing Vercel CLI
+    if (LOCAL_GROQ_KEY && window.location.hostname === 'localhost') {
+      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${LOCAL_GROQ_KEY}`
+        },
+        body: JSON.stringify({
+          messages,
+          model: "llama-3.3-70b-versatile",
+          response_format: { type: "json_object" },
+          temperature: neuralConfig.temperature || 0.2,
+          top_p: neuralConfig.topP || 0.8
+        })
+      });
+    } else {
+      // Production secure serverless route
+      response = await fetch("/api/groq-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages, neuralConfig })
+      });
+    }
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -104,27 +114,42 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
  * @param {string} fileName - Name of the uploaded screenshot.
  * @param {string} context - User provided text context.
  */
-export const analyzeScreenshot = async (fileName, context = "") => {
-  if (!GROQ_API_KEY) throw new Error("Neural Engine Offline.");
+export const analyzeScreenshot = async (fileName, context = "", base64Image = null) => {
+  let response;
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${GROQ_API_KEY}`
-    },
-    body: JSON.stringify({
-      messages: [
-        { 
-          role: "system", 
-          content: "You are an SAP Vision Analyst. Analyze the screenshot name and context to detect configuration glitches. Return JSON: { glitches: [{ label: string, x: number, y: number }], suggested_fix: string, confidence: number }. x and y are percentages (0-100) on the image." 
-        },
-        { role: "user", content: `Screenshot: ${fileName}. Context: ${context}` }
-      ],
-      model: "llama-3.3-70b-versatile",
-      response_format: { type: "json_object" }
-    })
-  });
+  if (LOCAL_GROQ_KEY && window.location.hostname === 'localhost') {
+    if (!LOCAL_GROQ_KEY) throw new Error("Neural Engine Offline.");
+    response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${LOCAL_GROQ_KEY}`
+      },
+      body: JSON.stringify({
+        messages: [
+          { 
+            role: "system", 
+            content: "You are an SAP Vision Analyst. Analyze the screenshot to detect SAP GUI configuration glitches. Return strict JSON: { \"glitches\": [{ \"label\": \"string\", \"x\": 10, \"y\": 20 }], \"suggested_fix\": \"string\", \"confidence\": 95 }. Focus ONLY on SAP configuration issues. If none found, state empty."  
+          },
+          { 
+            role: "user", 
+            content: [
+              { type: "text", text: `Context provided by user: ${context || 'None'}` },
+              ...(base64Image ? [{ type: "image_url", image_url: { url: base64Image } }] : [])
+            ]
+          }
+        ],
+        model: "llama-3.2-11b-vision-preview",
+        response_format: { type: "json_object" }
+      })
+    });
+  } else {
+    response = await fetch("/api/groq-vision", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ base64Image, context })
+    });
+  }
 
   const data = await response.json();
   return JSON.parse(data.choices[0].message.content);

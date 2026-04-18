@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FileText, Download, X, Copy, Check } from 'lucide-react';
+import { FileText, Download, X, Copy, Check, Code } from 'lucide-react';
 
 const FsdViewer = ({ roadmap, onClose }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [viewMode, setViewMode] = useState('fsd'); // 'fsd' or 'abap'
 
   const fsdContent = useMemo(() => {
     if (!roadmap) return 'No roadmap data available.';
@@ -34,12 +35,63 @@ ${roadmap.warnings?.map(w => `- ${w}`).join('\n') || 'No critical warnings detec
 ================================================`;
   }, [roadmap]);
 
+  const abapContent = useMemo(() => {
+    if (!roadmap) return '* No ABAP specification generated.';
+    
+    let bapiName = 'BAPI_SALESORDER_CREATEFROMDAT2';
+    if (roadmap.scenario_type?.toLowerCase().includes('mm') || roadmap.scenario_type?.toLowerCase().includes('material')) {
+      bapiName = 'BAPI_MATERIAL_SAVEDATA';
+    } else if (roadmap.scenario_type?.toLowerCase().includes('fico') || roadmap.scenario_type?.toLowerCase().includes('finance')) {
+      bapiName = 'BAPI_ACC_DOCUMENT_POST';
+    } else if (roadmap.scenario_type?.toLowerCase().includes('pricing')) {
+      bapiName = 'BAPI_PRICES_CONDITIONS';
+    }
+
+    const stepsComments = roadmap.configuration_roadmap?.map(s => `* [STEP ${s.step || ''}] ${s.description || ''}`).join('\n') || '* No steps provided.';
+    const progName = roadmap.scenario_type?.replace(/[^A-Za-z0-9_]/g, '').toUpperCase().substring(0, 15) || 'DRAFT';
+
+    return `*&---------------------------------------------------------------------*
+*& Report  Z_AETHER_${progName}
+*& Description: Auto-Generated ABAP Wrapper for ${roadmap.scenario_type || 'General'}
+*&---------------------------------------------------------------------*
+REPORT Z_AETHER_${progName}.
+
+* Functional Configuration Steps Embedded:
+${stepsComments}
+
+DATA: lt_return TYPE TABLE OF bapiret2,
+      ls_return TYPE bapiret2.
+
+* Primary BAPI determined by Aether Neural Engine
+CALL FUNCTION '${bapiName}'
+  EXPORTING
+    " TO DO: Map exporting parameters based on FSD Master Data
+  TABLES
+    return = lt_return.
+
+* Error Handling Loop
+LOOP AT lt_return INTO ls_return WHERE type = 'E' OR type = 'A'.
+  WRITE: / 'Error:', ls_return-message.
+ENDLOOP.
+
+IF sy-subrc = 0.
+  CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+    EXPORTING
+      wait = 'X'.
+  WRITE: / 'Successfully processed ${roadmap.scenario_type || 'scenario'}.'.
+ENDIF.
+`;
+  }, [roadmap]);
+
+  const activeContent = viewMode === 'fsd' ? fsdContent : abapContent;
+
   const handleDownload = () => {
-    const blob = new Blob([fsdContent], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([activeContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `SDAssist_FSD_${roadmap?.scenario_type || 'Draft'}_${new Date().getTime()}.txt`;
+    const ext = viewMode === 'fsd' ? 'txt' : 'abap';
+    link.download = `SDAssist_${viewMode.toUpperCase()}_${roadmap?.scenario_type || 'Draft'}_${new Date().getTime()}.${ext}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -47,7 +99,7 @@ ${roadmap.warnings?.map(w => `- ${w}`).join('\n') || 'No critical warnings detec
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(fsdContent);
+    navigator.clipboard.writeText(activeContent);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -59,11 +111,16 @@ ${roadmap.warnings?.map(w => `- ${w}`).join('\n') || 'No critical warnings detec
         <header className="p-6 border-b border-outline-variant/10 flex items-center justify-between bg-surface-container/50 rounded-t-2xl shrink-0">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-              <FileText size={20} />
+              {viewMode === 'fsd' ? <FileText size={20} /> : <Code size={20} />}
             </div>
             <div>
-              <h3 className="font-headline text-lg font-bold tracking-tight text-on-surface">Functional Specification</h3>
-              <p className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">{roadmap?.scenario_type || 'Draft'} • .TXT Viewer</p>
+              <h3 className="font-headline text-lg font-bold tracking-tight text-on-surface">
+                {viewMode === 'fsd' ? 'Functional Specification' : 'ABAP Technical Spec'}
+              </h3>
+              <div className="flex mt-1 bg-surface-container rounded-md p-0.5 border border-outline-variant/10 w-fit">
+                <button onClick={() => setViewMode('fsd')} className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${viewMode === 'fsd' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>FSD</button>
+                <button onClick={() => setViewMode('abap')} className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${viewMode === 'abap' ? 'bg-secondary text-on-secondary' : 'text-on-surface-variant hover:text-on-surface'}`}>ABAP Wrapper</button>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -77,11 +134,11 @@ ${roadmap.warnings?.map(w => `- ${w}`).join('\n') || 'No critical warnings detec
             </button>
             <button 
               onClick={handleDownload}
-              aria-label="Download TXT File"
+              aria-label={`Download ${viewMode.toUpperCase()} File`}
               className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dim text-on-primary text-xs font-bold transition-all flex items-center gap-2"
             >
               <Download size={14} />
-              Download .txt
+              Download .{viewMode === 'fsd' ? 'txt' : 'abap'}
             </button>
             <div className="w-px h-6 bg-outline-variant/20 mx-2"></div>
             <button 
@@ -96,7 +153,7 @@ ${roadmap.warnings?.map(w => `- ${w}`).join('\n') || 'No critical warnings detec
 
         {/* Text Content */}
         <div className="flex-1 overflow-auto p-6 bg-[#000000]/40 font-mono text-sm leading-relaxed text-on-surface-variant/90 custom-scrollbar whitespace-pre-wrap rounded-b-2xl">
-          {fsdContent}
+          {activeContent}
         </div>
       </div>
     </div>,

@@ -2,7 +2,7 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/((?!sitemap\\.xml|robots\\.txt|llms\\.txt|ai\\.txt|manifest\\.json|google78dcbd4a0fb8422d\\.html|favicon\\.svg|icons\\.svg).*)",
+      "source": "/((?!api/|sitemap\\.xml|robots\\.txt|llms\\.txt|ai\\.txt|manifest\\.json|google78dcbd4a0fb8422d\\.html|favicon\\.svg|icons\\.svg).*)",
       "destination": "/index.html"
     }
   ],

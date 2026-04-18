@@ -29,11 +29,19 @@ const VisionLab = () => {
     setZoomPos({ x, y, visible: true });
   };
 
+  const getBase64 = (f) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(f);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+
   const handleScan = async () => {
     if (!file) return;
     setIsScanning(true);
     try {
-      const result = await analyzeScreenshot(file.name, context);
+      const base64Image = await getBase64(file);
+      const result = await analyzeScreenshot(file.name, context, base64Image);
       setAnalysis(result);
     } catch (err) {
       console.error(err);

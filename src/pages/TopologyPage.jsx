@@ -1,9 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Network, Building2, Factory, Share2, Layers, ZoomIn, Sliders } from 'lucide-react';
+import { Network, Building2, Factory, Share2, Layers, ZoomIn, Sliders, Check } from 'lucide-react';
 
 const TopologyPage = () => {
   const svgRef = React.useRef(null);
+  const [copied, setCopied] = React.useState(false);
+
+  const handleExportMermaid = () => {
+    const mermaidSyntax = `\`\`\`mermaid
+graph TD
+  SORG[Sales Org: 1000] --> DIST[Distribution: 10]
+  SORG --> DIV[Division: 00]
+  DIST --> PLANT[Manufacturing Plant: 1000]
+  DIV --> PLANT
+\`\`\``;
+    navigator.clipboard.writeText(mermaidSyntax);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleDownload = () => {
     if (!svgRef.current) return;
@@ -33,6 +47,7 @@ const TopologyPage = () => {
           <p className="text-on-surface-variant text-sm">Real-time S/4HANA Org Structure Topology</p>
         </div>
         <div className="flex gap-3">
+          <ToolBtn onClick={handleExportMermaid} icon={copied ? <Check size={16} className="text-green-400" /> : <Network size={16} />} label={copied ? "Copied!" : "Mermaid.js"} />
           <ToolBtn onClick={handleDownload} icon={<Share2 size={16} />} label="Export SVG" />
           <ToolBtn icon={<ZoomIn size={16} />} />
           <ToolBtn icon={<Sliders size={16} />} />

@@ -98,7 +98,16 @@ const Dashboard = () => {
     try {
       const result = await generateRoadmap(inputValue, projectMeta, neuralConfig);
       setRoadmap(result);
-      setMessages(prev => [...prev, { role: 'assistant', content: `Neural roadmap generated for "${result.scenario_type}" scenario. Technical validation complete.` }]);
+      const successMessage = `Neural roadmap generated for "${result.scenario_type}" scenario. Technical validation complete.`;
+      setMessages(prev => [...prev, { role: 'assistant', content: successMessage }]);
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(`Roadmap successfully generated for ${result.scenario_type} scenario.`);
+        utterance.rate = 1.05;
+        utterance.pitch = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Neural link interrupted. Fallback logic engaged.' }]);
     } finally {
