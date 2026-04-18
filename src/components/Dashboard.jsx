@@ -250,9 +250,12 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="flex-1 relative flex flex-col items-center justify-center">
+              <div className="flex-1 relative flex flex-col items-center justify-start overflow-y-auto custom-scrollbar w-full pt-4 pb-12">
                 {roadmap?.configuration_roadmap ? (
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 z-20 w-full px-4">
+                  <div className="flex flex-col gap-6 z-20 w-full max-w-2xl px-4 relative">
+                    {/* Vertical connecting line */}
+                    <div className="absolute left-[39px] top-8 bottom-8 w-px bg-gradient-to-b from-primary/30 via-secondary/20 to-transparent hidden md:block"></div>
+                    
                     {roadmap.configuration_roadmap.map((node, i) => (
                       <NodeCard 
                         key={`${roadmap.scenario_type}-${i}`} 
@@ -261,11 +264,12 @@ const Dashboard = () => {
                         sub={node.description} 
                         icon={i % 2 === 0 ? <Building2 size={16} /> : <Network size={16} />} 
                         active={i === 0} 
+                        index={i + 1}
                       />
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-6 opacity-20">
+                  <div className="flex flex-col items-center justify-center gap-6 opacity-20 h-full w-full">
                     <Network size={64} className="text-on-surface-variant" />
                     <div className="text-sm font-headline uppercase tracking-[0.3em]">Ready for Requirement</div>
                   </div>
@@ -286,22 +290,31 @@ const Dashboard = () => {
   );
 };
 
-const NodeCard = ({ label, tcode, sub, icon, active = false }) => (
-  <div className={`glass-panel p-6 rounded-2xl border transition-all duration-500 group cursor-pointer relative ${active ? 'border-primary/40 shadow-[0_0_30px_rgba(104,211,255,0.15)] ring-1 ring-primary/20 scale-102 z-10 bg-primary/5' : 'border-outline-variant/10 hover:border-primary/20 hover:shadow-xl'}`}>
-    <div className="flex items-start gap-4 mb-3">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-primary/20 text-primary p-2' : 'bg-surface-container text-on-surface-variant group-hover:text-primary transition-colors'}`}>
-        {icon}
-      </div>
-      <div>
-        <div className="font-headline text-sm font-bold tracking-tight text-on-surface group-hover:text-primary transition-colors mb-0.5">{label}</div>
-        <div className="font-body text-[10px] text-primary/80 font-bold tracking-widest">{tcode}</div>
-      </div>
+const NodeCard = ({ label, tcode, sub, icon, active = false, index }) => (
+  <div className={`glass-panel p-6 rounded-2xl border transition-all duration-500 group cursor-pointer relative md:ml-6 flex gap-6 ${active ? 'border-primary/40 shadow-[0_0_30px_rgba(104,211,255,0.15)] ring-1 ring-primary/20 scale-[1.02] z-10 bg-primary/5' : 'border-outline-variant/10 hover:border-primary/20 hover:shadow-xl'}`}>
+    
+    {/* Step Number Circle (Timeline) */}
+    <div className={`absolute -left-12 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full border-2 hidden md:flex items-center justify-center font-body text-[10px] font-bold z-10 bg-surface ${active ? 'border-primary text-primary shadow-[0_0_15px_rgba(104,211,255,0.4)]' : 'border-outline-variant/30 text-on-surface-variant'}`}>
+      {index.toString().padStart(2, '0')}
     </div>
-    <div className="font-body text-[11px] text-on-surface-variant/80 leading-relaxed mb-4 border-t border-outline-variant/5 pt-3">
-      {sub}
+
+    {/* Icon */}
+    <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-primary/20 text-primary pt-1 shadow-inner' : 'bg-surface-container text-on-surface-variant group-hover:text-primary'}`}>
+      {icon}
     </div>
-    <div className="flex items-center gap-3">
-      <TCodeSearch tcode={tcode} />
+
+    {/* Content */}
+    <div className="flex-[3]">
+      <div className="flex items-center gap-3 justify-between mb-1">
+        <div className="font-headline text-base font-bold tracking-tight text-on-surface group-hover:text-primary transition-colors max-w-sm">{label}</div>
+        <div className="font-body text-[10px] px-2 py-0.5 rounded border border-primary/20 text-primary/80 font-bold tracking-widest bg-primary/5">{tcode}</div>
+      </div>
+      <div className="font-body text-xs text-on-surface-variant/80 leading-relaxed mb-4 mt-2 max-w-lg">
+        {sub}
+      </div>
+      <div className="flex items-center gap-3 pt-3 border-t border-outline-variant/5">
+        <TCodeSearch tcode={tcode} />
+      </div>
     </div>
   </div>
 );
