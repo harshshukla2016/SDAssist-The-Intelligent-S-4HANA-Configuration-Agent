@@ -138,7 +138,7 @@ const Dashboard = () => {
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-6 custom-scrollbar">
-            {messages.map((msg, i) => (
+            {Array.isArray(messages) && messages.map((msg, i) => (
               <div key={i} className={`flex items-start gap-3 w-full ${msg.role === 'user' ? 'self-end flex-row-reverse' : ''}`}>
                 <div className={`w-6 h-6 rounded flex items-center justify-center border shrink-0 mt-1 ${msg.role === 'user' ? 'bg-surface-container-high border-outline-variant/30' : 'bg-primary/10 border-primary/20'}`}>
                   {msg.role === 'user' ? <Layout className="text-on-surface-variant" size={12} /> : <Rocket className="text-primary" size={12} />}

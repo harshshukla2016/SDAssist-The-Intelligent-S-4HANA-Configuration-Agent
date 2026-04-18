@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { StateProvider } from './context/StateContext';
 import AetherLayout from './components/AetherLayout';
 import LandingPage from './pages/LandingPage';
+import ErrorBoundary from './ErrorBoundary';
 
 function App() {
   const [entered, setEntered] = useState(false);
@@ -30,7 +31,9 @@ function App() {
               transition={{ duration: 0.5, ease: 'easeInOut' }}
               style={{ position: 'absolute', inset: 0 }}
             >
-              <AetherLayout />
+              <ErrorBoundary>
+                <AetherLayout />
+              </ErrorBoundary>
             </motion.div>
           )}
         </AnimatePresence>

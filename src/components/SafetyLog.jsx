@@ -44,7 +44,7 @@ const SafetyLog = () => {
         </div>
         
         <div className="space-y-4">
-          {warnings.length > 0 ? warnings.map((warn, i) => (
+          {Array.isArray(warnings) && warnings.length > 0 ? warnings.map((warn, i) => (
             <div key={i} className={`p-6 rounded-2xl border flex gap-6 hover-lift ${warn.severity === 'CRITICAL' ? 'bg-error/10 border-error/20 shadow-[0_4px_20px_rgba(255,113,108,0.1)]' : 'bg-orange-500/10 border-orange-500/20'}`}>
               <Terminal size={24} className={warn.severity === 'CRITICAL' ? 'text-error mt-1' : 'text-orange-400 mt-1'} />
               <div>
