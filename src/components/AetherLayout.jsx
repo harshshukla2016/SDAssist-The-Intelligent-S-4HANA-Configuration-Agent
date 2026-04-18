@@ -55,7 +55,7 @@ const AetherLayout = ({ onExit }) => {
       <div className="gradient-mesh"></div>
       <Sidebar />
       <ProjectAlpha isOpen={isAlphaOpen} onClose={() => setIsAlphaOpen(false)} />
-      <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(true)} />
+      <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(false)} />
       
       <div className="flex-1 flex flex-col pl-0 md:pl-20 transition-all duration-300">
         <Header 
