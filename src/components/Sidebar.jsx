@@ -25,16 +25,16 @@ const Sidebar = () => {
     <div 
       id={`nav-${id}`}
       onClick={() => setActivePage(id)}
-      className={`p-4 mx-4 rounded-xl flex items-center gap-4 cursor-pointer transition-all duration-300 relative group/nav ${active ? 'bg-primary/10 text-primary shadow-[0_0_15px_rgba(104,211,255,0.1)]' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
+      className={`p-4 mx-4 rounded-xl flex items-center gap-4 cursor-pointer hover-lift relative group/nav ${active ? 'premium-glass text-primary ring-1 ring-primary/30 shadow-[0_0_20px_rgba(104,211,255,0.15)]' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
     >
-      <div className="shrink-0">{icon}</div>
+      <div className={`shrink-0 transition-transform duration-300 ${active ? 'scale-110' : 'group-hover/nav:scale-110'}`}>{icon}</div>
       <span className="font-headline text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">{label}</span>
-      {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full shadow-[2px_0_8px_rgba(104,211,255,0.6)]"></div>}
+      {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full shadow-[2px_0_12px_rgba(104,211,255,0.8)]"></div>}
     </div>
   );
 
   return (
-    <nav className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-20 hover:w-64 transition-all duration-500 z-40 bg-[#0d0e0f] flex-col py-6 border-r-0 group overflow-hidden shadow-[10px_0_30px_rgba(0,0,0,0.5)]">
+    <nav className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-20 hover:w-64 transition-all duration-500 z-40 premium-glass flex-col py-6 border-r border-white/5 group overflow-hidden">
       <div className="px-6 mb-8 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
         <div className="w-8 h-8 rounded shrink-0 bg-primary-container/20 flex items-center justify-center border border-primary/30">
           <Network size={16} className="text-primary" />

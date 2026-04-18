@@ -7,7 +7,7 @@ const Header = ({ onOpenAlpha, onOpenNeural }) => {
   const { isProcessing } = useAppState();
 
   return (
-    <header className="h-16 border-b border-outline-variant/10 flex items-center justify-between px-8 bg-surface/50 backdrop-blur-md sticky top-0 z-50">
+    <header className="h-16 border-b border-outline-variant/10 flex items-center justify-between px-8 premium-glass sticky top-0 z-50">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-primary rounded-sm flex items-center justify-center">
