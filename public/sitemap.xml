@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- ══════════════════════════════════════════════════
+       SDAssist Aether Sitemap
+       Generated: 2026-04-18
+       Base URL: https://sd-assist.vercel.app
+       Total Pages: 16
+  ══════════════════════════════════════════════════ -->
+
+  <!-- Priority 1.0 – Homepage / Landing Page -->
+  <url>
+    <loc>https://sd-assist.vercel.app/</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Priority 0.95 – Core Dashboard (Neural Architect) -->
+  <url>
+    <loc>https://sd-assist.vercel.app/dashboard</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- Priority 0.90 – SD Module Pages -->
+  <url>
+    <loc>https://sd-assist.vercel.app/enterprise</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://sd-assist.vercel.app/pricing</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://sd-assist.vercel.app/o2c</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://sd-assist.vercel.app/topology</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Priority 0.88 – MM Module  -->
+  <url>
+    <loc>https://sd-assist.vercel.app/mm</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.88</priority>
+  </url>
+
+  <!-- Priority 0.88 – FICO Module -->
+  <url>
+    <loc>https://sd-assist.vercel.app/fico</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.88</priority>
+  </url>
+
+  <!-- Priority 0.86 – Vision Neural Lab -->
+  <url>
+    <loc>https://sd-assist.vercel.app/vision</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.86</priority>
+  </url>
+
+  <!-- Priority 0.84 – Master Data -->
+  <url>
+    <loc>https://sd-assist.vercel.app/master</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.84</priority>
+  </url>
+
+  <!-- Priority 0.82 – Workflow & Agents -->
+  <url>
+    <loc>https://sd-assist.vercel.app/workflow</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.82</priority>
+  </url>
+
+  <url>
+    <loc>https://sd-assist.vercel.app/agents</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.82</priority>
+  </url>
+
+  <!-- Priority 0.80 – Cloud & Archives -->
+  <url>
+    <loc>https://sd-assist.vercel.app/sync</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://sd-assist.vercel.app/archives</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <!-- Priority 0.70 – Safety & Support -->
+  <url>
+    <loc>https://sd-assist.vercel.app/safety</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+  </url>
+
+  <url>
+    <loc>https://sd-assist.vercel.app/support</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+
+</urlset>

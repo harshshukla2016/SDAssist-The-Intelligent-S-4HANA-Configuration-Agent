@@ -1,0 +1,82 @@
+# SDAssist Aether – robots.txt
+# https://sd-assist.vercel.app
+# Updated: 2026-04-18
+
+# ═══════════════════════════════════════
+# ALLOW ALL MAJOR SEARCH ENGINE CRAWLERS
+# ═══════════════════════════════════════
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 3
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+User-agent: facebot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+# ═══════════════════════════════════════
+# AI / LLM PLATFORM CRAWLERS
+# Allow AI search engines to index content
+# ═══════════════════════════════════════
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: ia_archiver
+Allow: /
+
+# ═══════════════════════════════════════
+# GLOBAL DEFAULT – allow everything
+# ═══════════════════════════════════════
+User-agent: *
+Allow: /
+Crawl-delay: 2
+
+# ═══════════════════════════════════════
+# SITEMAP DECLARATION
+# ═══════════════════════════════════════
+Sitemap: https://sd-assist.vercel.app/sitemap.xml
