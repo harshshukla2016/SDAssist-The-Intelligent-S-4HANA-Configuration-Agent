@@ -1,32 +1,23 @@
 {
-  "routes": [
+  "framework": "vite",
+  "rewrites": [
     {
-      "src": "/google78dcbd4a0fb8422d.html",
-      "dest": "/google78dcbd4a0fb8422d.html"
+      "source": "/((?!sitemap\\.xml|robots\\.txt|llms\\.txt|ai\\.txt|manifest\\.json|google78dcbd4a0fb8422d\\.html|favicon\\.svg|icons\\.svg).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [{ "key": "Content-Type", "value": "application/xml" }]
     },
     {
-      "src": "/sitemap.xml",
-      "dest": "/sitemap.xml"
+      "source": "/robots.txt",
+      "headers": [{ "key": "Content-Type", "value": "text/plain" }]
     },
     {
-      "src": "/robots.txt",
-      "dest": "/robots.txt"
-    },
-    {
-      "src": "/llms.txt",
-      "dest": "/llms.txt"
-    },
-    {
-      "src": "/ai.txt",
-      "dest": "/ai.txt"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/google78dcbd4a0fb8422d.html",
+      "headers": [{ "key": "Content-Type", "value": "text/html" }]
     }
   ]
 }
