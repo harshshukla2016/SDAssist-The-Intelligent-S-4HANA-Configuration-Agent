@@ -13,7 +13,8 @@ import {
   Zap,
   Package,
   Landmark,
-  Eye
+  Eye,
+  Database
 } from 'lucide-react';
 import { useAppState } from '../context/StateContext';
 
