@@ -34,49 +34,34 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
       You MUST output a structured JSON response containing:
       {
         "status": "validated",
-        "scenario_type": "Entry | Pricing | Partners | OrderProcess | Other",
+        "scenario_type": "Entry | Pricing | Partners | OrderProcess | MM | FICO | Other",
         "estimatedHours": number,
         "enterprise_structure": {
-          "sales_org": "code",
-          "dist_channel": "code",
-          "division": "code",
-          "company_code": "code",
-          "plant": "code",
-          "shipping_point": "code"
+          "sales_org": "code", "dist_channel": "code", "division": "code",
+          "company_code": "code", "plant": "code", "shipping_point": "code",
+          "purchasing_org": "code", "purchasing_group": "code"
         },
         "pricing_procedure": {
           "name": "string",
-          "steps": [
-            { "step": 10, "cond_type": "PR00", "description": "Base Price", "requirement": "2" },
-            { "step": 20, "cond_type": "K007", "description": "Discount", "requirement": "None" },
-            { "step": 100, "cond_type": "MWST", "description": "Tax", "requirement": "10" }
-          ]
+          "steps": [...]
         },
-        "o2c_flow": [
-          { "doc_type": "Inquiry", "tcode": "VA11", "status": "completed" },
-          { "doc_type": "Quotation", "tcode": "VA21", "status": "pending" },
-          { "doc_type": "Sales Order", "tcode": "VA01", "status": "pending" },
-          { "doc_type": "Delivery", "tcode": "VL01N", "status": "pending" },
-          { "doc_type": "Billing", "tcode": "VF01", "status": "pending" }
+        "o2c_flow": [...],
+        "procurement_roadmap": [
+          { "step": "Purchase Requisition", "tcode": "ME51N" },
+          { "step": "Purchase Order", "tcode": "ME21N" },
+          { "step": "Goods Receipt", "tcode": "MIGO" },
+          { "step": "Invoice Verification", "tcode": "MIRO" }
         ],
-        "configuration_roadmap": [
-          {
-            "step": "Short step name",
-            "tcode": "SAP T-Code",
-            "dependency": "What must be configured first",
-            "description": "Short technical detail"
-          }
-        ],
+        "financial_ledger": {
+          "dr_account": "Receivables/Inventory",
+          "cr_account": "Revenue/Payables",
+          "gl_mapping_tcode": "VKOA / OBYC"
+        },
+        "configuration_roadmap": [...],
         "warnings": ["Potential pitfalls"]
       }
 
-      Context Rule: If the user mentions a specific industry (e.g., Automotive), tailor the Enterprise Structure and Pricing steps to match (e.g., use JIT/JIS for Automotive).
-
-      Key Scenarios:
-      1. New Market Entry: OX02, OVX1, OVX3, OVXC.
-      2. Pricing Models: V/06, V/07, V/08.
-      3. Partners: VOPAN.
-      4. Order Process: VOV7, VOV6, VOV4.
+      Context Rule: For MM, focus on ME21N/MIGO logic. For FICO, focus on VKOA account determination.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -113,34 +98,51 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
   }
 };
 
+/**
+ * Neural Vision Engine: Analyzes SAP GUI screenshots (simulated).
+ * @param {string} fileName - Name of the uploaded screenshot.
+ * @param {string} context - User provided text context.
+ */
+export const analyzeScreenshot = async (fileName, context = "") => {
+  if (!GROQ_API_KEY) throw new Error("Neural Engine Offline.");
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${GROQ_API_KEY}`
+    },
+    body: JSON.stringify({
+      messages: [
+        { 
+          role: "system", 
+          content: "You are an SAP Vision Analyst. Analyze the screenshot name and context to detect configuration glitches. Predict if fields like Item Category, Pricing, or Account assignment are wrong. Return JSON: { glitches: [], suggested_fix: '', confidence: number }" 
+        },
+        { role: "user", content: `Screenshot: ${fileName}. Context: ${context}` }
+      ],
+      model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" }
+    })
+  });
+
+  const data = await response.json();
+  return JSON.parse(data.choices[0].message.content);
+};
+
 const getDefaultRoadmap = (req) => {
-  if (req.toLowerCase().includes('pune')) {
-    return {
-      status: "mock",
-      scenario_type: "Entry",
-      estimatedHours: 4,
-      configuration_roadmap: [
-        { step: "Define Company Code", tcode: "OX02", dependency: "None", description: "Legal entity." },
-        { step: "Assign Sales Org to CC", tcode: "OVX1", dependency: "OX02", description: "Link IN01." }
-      ]
-    };
-  }
   return {
     status: "mock",
     scenario_type: "General",
     estimatedHours: 2,
     configuration_roadmap: [
-      { step: "Define Sales Org", tcode: "OVX5", dependency: "None", description: "Org unit." }
+      { step: "Define Organizational Units", tcode: "SPRO", description: "General setup." }
     ]
   };
 };
 
-/**
- * Mock pricing validator.
- */
 export const validatePricing = (pricingData) => {
-  const baseIndex = pricingData.findIndex(p => p.condition?.toLowerCase().includes('base'));
-  const discountIndex = pricingData.findIndex(p => p.condition?.toLowerCase().includes('discount'));
+  const baseIndex = pricingData.findIndex(p => p.description?.toLowerCase().includes('base'));
+  const discountIndex = pricingData.findIndex(p => p.description?.toLowerCase().includes('discount'));
   if (discountIndex !== -1 && baseIndex !== -1 && discountIndex < baseIndex) {
     return ["Discount condition placed before Base Price – will result in $0 calculation."];
   }

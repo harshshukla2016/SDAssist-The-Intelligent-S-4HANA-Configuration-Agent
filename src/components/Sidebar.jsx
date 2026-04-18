@@ -10,7 +10,10 @@ import {
   Settings2,
   Calculator,
   Layout,
-  Zap
+  Zap,
+  Package,
+  Landmark,
+  Eye
 } from 'lucide-react';
 import { useAppState } from '../context/StateContext';
 
@@ -51,6 +54,9 @@ const Sidebar = () => {
         <div className="px-8 mt-6 mb-2 text-[9px] font-bold text-on-surface-variant/40 uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Execution Pipeline</div>
         <NavIcon id="workflow" icon={<Network size={18} />} label="Neural Pipeline" active={activePage === 'workflow'} />
         <NavIcon id="o2c" icon={<Zap size={18} />} label="O2C Flow" active={activePage === 'o2c'} />
+        <NavIcon id="mm" icon={<Package size={18} />} label="Materials (MM)" active={activePage === 'mm'} />
+        <NavIcon id="fico" icon={<Landmark size={18} />} label="Finance (FICO)" active={activePage === 'fico'} />
+        <NavIcon id="vision" icon={<Eye size={18} />} label="Vision Lab" active={activePage === 'vision'} />
         <NavIcon id="agents" icon={<Settings2 size={18} />} label="Agent Mission Control" active={activePage === 'agents'} />
         <NavIcon id="sync" icon={<Cloud size={18} />} label="Cloud Ledger" active={activePage === 'sync'} />
         <NavIcon id="archives" icon={<Archive size={18} />} label="Memory Bank" active={activePage === 'archives'} />

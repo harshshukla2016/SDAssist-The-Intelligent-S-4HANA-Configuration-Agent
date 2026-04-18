@@ -13,7 +13,9 @@ import CloudSyncPage from '../pages/CloudSyncPage';
 import ArchivesPage from '../pages/ArchivesPage';
 import EnterprisePage from '../pages/EnterprisePage';
 import O2CPage from '../pages/O2CPage';
-import PricingPage from '../pages/PricingPage';
+import MaterialsPage from '../pages/MaterialsPage';
+import FinancePage from '../pages/FinancePage';
+import VisionLab from '../pages/VisionLab';
 
 // Command Center Panels
 import ProjectAlpha from './ProjectAlpha';
@@ -35,6 +37,9 @@ const AetherLayout = () => {
       case 'enterprise': return <EnterprisePage />;
       case 'o2c': return <O2CPage />;
       case 'pricing': return <PricingPage />;
+      case 'mm': return <MaterialsPage />;
+      case 'fico': return <FinancePage />;
+      case 'vision': return <VisionLab />;
       case 'safety': return <SafetyLog />;
       default: return <Dashboard />;
     }
