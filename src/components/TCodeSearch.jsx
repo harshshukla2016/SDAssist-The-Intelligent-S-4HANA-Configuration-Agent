@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, ExternalLink, Loader2, X } from 'lucide-react';
 import { searchTCode } from '../services/googleSearch';
 
@@ -31,7 +32,7 @@ const TCodeSearch = ({ tcode }) => {
         Deep Research
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="glass-panel w-full max-w-md p-6 rounded-2xl border border-outline-variant/20 shadow-2xl relative">
             <button 
@@ -79,7 +80,8 @@ const TCodeSearch = ({ tcode }) => {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
