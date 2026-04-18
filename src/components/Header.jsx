@@ -37,8 +37,8 @@ const Header = ({ onOpenAlpha, onOpenNeural, onExit }) => {
         <button className="text-primary hover:text-white transition-colors active:scale-95 duration-100 flex items-center justify-center">
           <Settings2 size={20} />
         </button>
-        <div className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden ml-2 outline outline-1 outline-outline-variant/30 cursor-pointer">
-          <img src="https://lh3.googleusercontent.com/a/ACg8ocL8Rvhz5v4u3T8X678G8g7X7mX" alt="User" className="w-full h-full object-cover" />
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center ml-2 border border-primary/20 text-primary cursor-pointer hover:bg-primary/20 transition-colors shrink-0">
+          <span className="font-headline font-bold text-xs">HS</span>
         </div>
       </div>
     </header>
