@@ -14,9 +14,9 @@ import {
   Layout
 } from 'lucide-react';
 import { useAppState } from '../context/StateContext';
-import { generateRoadmap } from '../services/sapLogic';
+import { generateRoadmap, generateCouncilDebate } from '../services/sapLogic';
 import { syncToSheets } from '../services/googleSheets';
-import { Mic, MicOff, FileText } from 'lucide-react';
+import { Mic, MicOff, FileText, Shield } from 'lucide-react';
 import { generateFSD } from '../services/googleDocs';
 
 // Feature Components
@@ -33,7 +33,7 @@ const Dashboard = () => {
     isSyncing, setIsSyncing,
     saveToArchives,
     activePage, setActivePage,
-    projectMeta, neuralConfig, googleToken
+    projectMeta, neuralConfig, googleToken, localRagContext
   } = useAppState();
   
   const [inputValue, setInputValue] = useState('');
@@ -96,7 +96,7 @@ const Dashboard = () => {
     setShowCalendarPrompt(false);
 
     try {
-      const result = await generateRoadmap(inputValue, projectMeta, neuralConfig);
+      const result = await generateRoadmap(inputValue, projectMeta, neuralConfig, localRagContext);
       setRoadmap(result);
       const successMessage = `Neural roadmap generated for "${result.scenario_type}" scenario. Technical validation complete.`;
       setMessages(prev => [...prev, { role: 'assistant', content: successMessage }]);
@@ -110,6 +110,24 @@ const Dashboard = () => {
       }
     } catch (err) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Neural link interrupted. Fallback logic engaged.' }]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCouncilReview = async () => {
+    if (!inputValue.trim() || isProcessing) return;
+
+    const userMsg = { role: 'user', content: `[COUNCIL DEBATE] ${inputValue}` };
+    setMessages(prev => [...prev, userMsg]);
+    setIsProcessing(true);
+
+    try {
+      const debateResult = await generateCouncilDebate(inputValue);
+      setMessages(prev => [...prev, { role: 'assistant-council', content: debateResult }]);
+      setInputValue('');
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Council link interrupted.' }]);
     } finally {
       setIsProcessing(false);
     }
@@ -150,11 +168,33 @@ const Dashboard = () => {
             {Array.isArray(messages) && messages.map((msg, i) => (
               <div key={i} className={`flex items-start gap-3 w-full ${msg.role === 'user' ? 'self-end flex-row-reverse' : ''}`}>
                 <div className={`w-6 h-6 rounded flex items-center justify-center border shrink-0 mt-1 ${msg.role === 'user' ? 'bg-surface-container-high border-outline-variant/30' : 'bg-primary/10 border-primary/20'}`}>
-                  {msg.role === 'user' ? <Layout className="text-on-surface-variant" size={12} /> : <Rocket className="text-primary" size={12} />}
+                  {msg.role === 'user' ? <Layout className="text-on-surface-variant" size={12} /> : msg.role === 'assistant-council' ? <Shield className="text-secondary" size={12} /> : <Rocket className="text-primary" size={12} />}
                 </div>
-                <div className={`p-4 outline outline-1 leading-relaxed text-sm w-full ${msg.role === 'user' ? 'bg-surface-container-high rounded-l-xl rounded-br-xl outline-outline-variant/10 shadow-lg' : 'bg-surface-container rounded-r-xl rounded-bl-xl outline-outline-variant/15 text-on-surface/90 shadow-xl'}`}>
-                  {msg.content}
-                </div>
+                
+                {msg.role === 'assistant-council' ? (
+                  <div className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-xl overflow-hidden shadow-xl mt-1">
+                    <div className="bg-surface-container px-3 py-2 border-b border-outline-variant/10 text-[10px] uppercase tracking-widest font-bold text-secondary flex justify-between items-center">
+                      <span>Council Debate Transcript</span>
+                      <Shield size={10} />
+                    </div>
+                    <div className="p-4 flex flex-col gap-4">
+                      {msg.content?.debate?.map((d, di) => (
+                        <div key={di} className="flex flex-col gap-1">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{d.agent}</span>
+                          <p className="text-sm text-on-surface/90 italic border-l-2 border-primary/30 pl-3 py-1 bg-primary/5 rounded-r-lg">"{d.message}"</p>
+                        </div>
+                      ))}
+                      <div className="mt-2 p-3 bg-secondary/10 border border-secondary/20 rounded-lg">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-secondary block mb-1">Final Verdict Assessed</span>
+                        <p className="text-sm text-on-surface font-medium">{msg.content?.final_verdict}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`p-4 outline outline-1 leading-relaxed text-sm w-full ${msg.role === 'user' ? 'bg-surface-container-high rounded-l-xl rounded-br-xl outline-outline-variant/10 shadow-lg' : 'bg-surface-container rounded-r-xl rounded-bl-xl outline-outline-variant/15 text-on-surface/90 shadow-xl'}`}>
+                    {msg.content}
+                  </div>
+                )}
               </div>
             ))}
             {isProcessing && (
@@ -185,6 +225,16 @@ const Dashboard = () => {
                 <Search size={18} />
               </div>
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <button 
+                  type="button"
+                  onClick={handleCouncilReview}
+                  disabled={!inputValue.trim() || isProcessing}
+                  title="Summon Council Debate"
+                  className="p-2 rounded-lg text-secondary hover:text-secondary/70 transition-all disabled:opacity-50 disabled:cursor-not-allowed hidden sm:block"
+                >
+                  <Shield size={16} />
+                </button>
+                <div className="w-px h-5 bg-outline-variant/20 mx-1 hidden sm:block"></div>
                 <button 
                   id="voice-command-btn"
                   aria-label="Activate Neural Voice"

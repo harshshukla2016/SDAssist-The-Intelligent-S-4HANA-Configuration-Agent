@@ -37,6 +37,7 @@ export const StateProvider = ({ children }) => {
   const [neuralConfig, setNeuralConfig] = useState({
     temperature: 0.2, topP: 0.8, persona: 'Expert SAP Architect', language: 'English'
   });
+  const [localRagContext, setLocalRagContext] = useState('');
 
   // ── DB Init & Migration ────────────────────────────────
   useEffect(() => {
@@ -178,6 +179,7 @@ export const StateProvider = ({ children }) => {
       allRoadmaps,
       projectMeta,   setProjectMeta,
       neuralConfig,  setNeuralConfig,
+      localRagContext, setLocalRagContext,
       dbReady,       dbStats,
     }}>
       {children}

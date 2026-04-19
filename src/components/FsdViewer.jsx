@@ -83,14 +83,96 @@ ENDIF.
 `;
   }, [roadmap]);
 
-  const activeContent = viewMode === 'fsd' ? fsdContent : abapContent;
+  const jiraContent = useMemo(() => {
+    if (!roadmap) return '* No Jira EPIC specification generated.';
+    
+    const stories = roadmap.configuration_roadmap?.map((s, i) => `
+### Story ${i + 1}: ${s.step || ''}
+*As a* SAP consultant, 
+*I need to* execute T-Code [ ${s.tcode || 'N/A'} ], 
+*So that* ${s.description || 'N/A'}
+
+**Acceptance Criteria:**
+- [x] Configuration saved to Transport Request.
+- [x] Successfully tested in Dev Environment.
+`).join('') || '* No stories provided.';
+
+    return `================================================
+JIRA EPIC: S/4HANA ${roadmap.scenario_type || 'General'} Configuration
+================================================
+Status: To Do
+Priority: High
+Assignee: Aether Agent 
+
+**Background:** 
+Technical enablement required for the "${roadmap.scenario_type}" workflow. 
+Below are the individual User Stories auto-generated to track development.
+------------------------------------------------
+${stories}
+================================================`;
+  }, [roadmap]);
+
+  const uatContent = useMemo(() => {
+    if (!roadmap) return '* No UAT Test Scripts generated.';
+    const rows = roadmap.configuration_roadmap?.map((s, i) => 
+`| ${String(i + 1).padStart(2, '0')} | Execute T-Code ${s.tcode || 'N/A'} | Validate ${s.step || ''} | Pass / Fail |`
+    ).join('\n') || '| -- | No steps provided | -- | -- |';
+
+    return `================================================
+UAT TEST SCRIPT: ${roadmap.scenario_type || 'General'}
+================================================
+
+| ID | Action (Test Step) | Expected Result | Status |
+|----|--------------------|-----------------|--------|
+${rows}
+
+**Tester Sign-Off:** ___________________________  **Date:** _______________
+`;
+  }, [roadmap]);
+
+  const ltmcContent = useMemo(() => {
+    if (!roadmap) return '* No Master Data views generated.';
+    const custViews = roadmap.master_data?.customer_views?.join(', ') || 'N/A';
+    const matViews = roadmap.master_data?.material_views?.join(', ') || 'N/A';
+
+    return `================================================
+LTMC / MIGRATION COCKPIT SCHEMA: ${roadmap.scenario_type || 'General'}
+================================================
+* This schema defines the mandatory load sequences for Master Data objects.
+
+MIGRATION OBJECT: CUSTOMER MASTER
+------------------------------------------------
+Mandatory Views Required: 
+${custViews}
+
+CSV TEMPLATE STRUCTURE (Header Row):
+KUNNR, BUKRS, VKORG, VTWEG, SPART, NAME1, LAND1
+
+MIGRATION OBJECT: MATERIAL MASTER
+------------------------------------------------
+Mandatory Views Required: 
+${matViews}
+
+CSV TEMPLATE STRUCTURE (Header Row):
+MATNR, MTART, MBRSH, MEINS, VKORG, VTWEG
+================================================`;
+  }, [roadmap]);
+
+  const activeContent = viewMode === 'fsd' ? fsdContent :
+                        viewMode === 'abap' ? abapContent :
+                        viewMode === 'jira' ? jiraContent :
+                        viewMode === 'uat' ? uatContent :
+                        ltmcContent;
 
   const handleDownload = () => {
     const blob = new Blob([activeContent], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const ext = viewMode === 'fsd' ? 'txt' : 'abap';
+    let ext = 'txt';
+    if (viewMode === 'abap') ext = 'abap';
+    if (viewMode === 'jira' || viewMode === 'uat' || viewMode === 'ltmc') ext = 'md';
+    
     link.download = `SDAssist_${viewMode.toUpperCase()}_${roadmap?.scenario_type || 'Draft'}_${new Date().getTime()}.${ext}`;
     document.body.appendChild(link);
     link.click();
@@ -115,11 +197,18 @@ ENDIF.
             </div>
             <div>
               <h3 className="font-headline text-lg font-bold tracking-tight text-on-surface">
-                {viewMode === 'fsd' ? 'Functional Specification' : 'ABAP Technical Spec'}
+                {viewMode === 'fsd' ? 'Functional Specification' : 
+                 viewMode === 'abap' ? 'ABAP Technical Spec' : 
+                 viewMode === 'jira' ? 'Agile DevOps Epic' :
+                 viewMode === 'uat' ? 'UAT Test Scripts' :
+                 'Data Migration Schema'}
               </h3>
-              <div className="flex mt-1 bg-surface-container rounded-md p-0.5 border border-outline-variant/10 w-fit">
+              <div className="flex mt-1 bg-surface-container rounded-md p-0.5 border border-outline-variant/10 w-fit flex-wrap gap-1">
                 <button onClick={() => setViewMode('fsd')} className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${viewMode === 'fsd' ? 'bg-primary text-on-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>FSD</button>
                 <button onClick={() => setViewMode('abap')} className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${viewMode === 'abap' ? 'bg-secondary text-on-secondary' : 'text-on-surface-variant hover:text-on-surface'}`}>ABAP Wrapper</button>
+                <button onClick={() => setViewMode('jira')} className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${viewMode === 'jira' ? 'bg-blue-500 text-white' : 'text-on-surface-variant hover:text-on-surface'}`}>Jira Epic</button>
+                <button onClick={() => setViewMode('uat')} className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${viewMode === 'uat' ? 'bg-orange-500 text-white' : 'text-on-surface-variant hover:text-on-surface'}`}>UAT</button>
+                <button onClick={() => setViewMode('ltmc')} className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all ${viewMode === 'ltmc' ? 'bg-green-500 text-white' : 'text-on-surface-variant hover:text-on-surface'}`}>LTMC</button>
               </div>
             </div>
           </div>
@@ -138,7 +227,7 @@ ENDIF.
               className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dim text-on-primary text-xs font-bold transition-all flex items-center gap-2"
             >
               <Download size={14} />
-              Download .{viewMode === 'fsd' ? 'txt' : 'abap'}
+              Download .{viewMode === 'fsd' ? 'txt' : viewMode === 'abap' ? 'abap' : 'md'}
             </button>
             <div className="w-px h-6 bg-outline-variant/20 mx-2"></div>
             <button 

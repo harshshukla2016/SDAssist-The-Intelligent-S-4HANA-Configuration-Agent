@@ -11,6 +11,7 @@ import WorkflowPage from '../pages/WorkflowPage';
 import TopologyPage from '../pages/TopologyPage';
 import CloudSyncPage from '../pages/CloudSyncPage';
 import ArchivesPage from '../pages/ArchivesPage';
+import TCodeLibrary from '../pages/TCodeLibrary';
 import EnterprisePage from '../pages/EnterprisePage';
 import O2CPage from '../pages/O2CPage';
 import PricingPage from '../pages/PricingPage';
@@ -33,6 +34,7 @@ const AetherLayout = ({ onExit }) => {
     switch (activePage) {
       case 'dashboard': return <Dashboard />;
       case 'agents': return <AgentsPage />;
+      case 'tcodes': return <TCodeLibrary />;
       case 'workflow': return <WorkflowPage />;
       case 'topology': return <TopologyPage />;
       case 'sync': return <CloudSyncPage />;

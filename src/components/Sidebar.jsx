@@ -14,7 +14,8 @@ import {
   Package,
   Landmark,
   Eye,
-  Database
+  Database,
+  Book
 } from 'lucide-react';
 import { useAppState } from '../context/StateContext';
 
@@ -48,6 +49,7 @@ const Sidebar = () => {
       <div className="flex flex-col gap-2 flex-grow overflow-y-auto custom-scrollbar pr-2">
         <div className="px-8 mt-4 mb-2 text-[9px] font-bold text-on-surface-variant/40 uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Architectural Core</div>
         <NavIcon id="dashboard" icon={<Rocket size={18} />} label="Neural Architect" active={activePage === 'dashboard'} />
+        <NavIcon id="tcodes" icon={<Book size={18} />} label="T-Code Library" active={activePage === 'tcodes'} />
         <NavIcon id="master" icon={<Database size={18} />} label="Master Data Dossier" active={activePage === 'master'} />
         <NavIcon id="enterprise" icon={<Building2 size={18} />} label="Enterprise Structure" active={activePage === 'enterprise'} />
         <NavIcon id="topology" icon={<Layout size={18} />} label="Topology Matrix" active={activePage === 'topology'} />

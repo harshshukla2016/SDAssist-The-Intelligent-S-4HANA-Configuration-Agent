@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Archive, Clock, ArrowRight, Table, Layout, Search, Zap, Trash2, RefreshCw, X } from 'lucide-react';
+import { Archive, Clock, ArrowRight, Table, Layout, Search, Zap, Trash2, RefreshCw, X, Upload, BrainCircuit, ShieldCheck } from 'lucide-react';
 import { useAppState } from '../context/StateContext';
 
 const ArchivesPage = () => {
-  const { archives, setRoadmap, setActivePage } = useAppState();
+  const { archives, setRoadmap, setActivePage, localRagContext, setLocalRagContext } = useAppState();
   const [selected, setSelected] = React.useState([]);
   const [comparison, setComparison] = React.useState(null);
   const [isAnalyzing, setIsAnalyzing] = React.useState(false);
@@ -43,6 +43,21 @@ const ArchivesPage = () => {
     setActivePage('dashboard');
   };
 
+  const handleRagUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setLocalRagContext(event.target.result);
+    };
+    reader.readAsText(file);
+  };
+
+  const clearRagContext = () => {
+    setLocalRagContext('');
+  };
+
   return (
     <div className="p-8 h-full overflow-y-auto custom-scrollbar flex flex-col">
       <header className="mb-12 flex justify-between items-end">
@@ -63,6 +78,58 @@ const ArchivesPage = () => {
           </button>
         )}
       </header>
+
+      {/* Local RAG / Proprietary Memory Injection Zone */}
+      <section className="mb-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className={`p-8 rounded-[2.5rem] border-2 border-dashed transition-all flex flex-col items-center justify-center min-h-[220px] ${localRagContext ? 'border-secondary/40 bg-secondary/5' : 'border-outline-variant/20 hover:border-primary/30 bg-surface-container-lowest/5'}`}>
+          {!localRagContext ? (
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-4 text-on-surface-variant/40 outline outline-1 outline-outline-variant/10">
+                <BrainCircuit size={28} />
+              </div>
+              <h4 className="font-headline font-bold mb-1">Inject Local RAG Context</h4>
+              <p className="text-[10px] text-on-surface-variant mb-6 uppercase tracking-widest">Feed proprietary business rules to Aether</p>
+              <label className="px-6 py-2.5 rounded-xl bg-secondary text-on-secondary font-bold text-[10px] cursor-pointer hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20 uppercase tracking-widest">
+                Upload Policy (.txt)
+                <input type="file" className="hidden" accept=".txt,.md,.json" onChange={handleRagUpload} />
+              </label>
+            </div>
+          ) : (
+            <div className="w-full flex flex-col h-full">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2 text-secondary">
+                  <ShieldCheck size={18} />
+                  <span className="text-[10px] uppercase font-bold tracking-widest">Active Neural Constraint Active</span>
+                </div>
+                <button onClick={clearRagContext} className="p-2 rounded-lg bg-surface-container hover:bg-error/10 text-on-surface-variant hover:text-error transition-all">
+                  <X size={14} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto max-h-[120px] p-4 bg-surface-container-low rounded-xl text-[11px] font-mono leading-relaxed text-on-surface-variant/80 border border-secondary/10">
+                {localRagContext}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="glass-panel p-8 rounded-[2.5rem] border border-outline-variant/10 flex flex-col justify-center">
+          <h4 className="font-headline font-bold text-lg mb-2 flex items-center gap-2">
+             <Zap size={18} className="text-secondary" />
+             RAG Logic Engine
+          </h4>
+          <p className="text-xs text-on-surface-variant leading-relaxed mb-4">
+            By uploading proprietary SAP blueprints or company specific pricing policies, you constrain Aether's Neural Engine to your specific landscape. This prevents standard SAP hallucinations and forces compliance with local enterprise standards.
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="px-3 py-1 rounded-full bg-secondary/10 border border-secondary/20 text-[9px] font-bold text-secondary uppercase tracking-widest">
+              Zero-Cloud Leakage
+            </div>
+            <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[9px] font-bold text-primary uppercase tracking-widest">
+              Context-Engine 4.0
+            </div>
+          </div>
+        </div>
+      </section>
 
       <AnimatePresence>
         {comparison && (

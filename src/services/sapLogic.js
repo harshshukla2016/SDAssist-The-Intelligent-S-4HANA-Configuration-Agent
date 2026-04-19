@@ -11,8 +11,9 @@ const LOCAL_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
  * @param {string} requirement - User's business requirement.
  * @param {Object} projectMeta - Project metadata (client, industry, version).
  * @param {Object} neuralConfig - Neural parameters (temperature, persona).
+ * @param {string} localRagContext - Parsed RAG local memory rules.
  */
-export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfig = {}) => {
+export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfig = {}, localRagContext = "") => {
   if (!requirement) {
     throw new Error("Business requirement is mandatory.");
   }
@@ -58,7 +59,9 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
         "warnings": ["Potential pitfalls"]
       }
 
+      Design constraints: Use standard SAP Best Practices unless otherwise specified.
       Context Rule: Respect the 'Condition Technique' (Specific -> General). Use Access Sequences for automatic pricing.
+      ${localRagContext ? `\nCRITICAL PROPRIETARY RULES (RAG MEMORY BANK):\n${localRagContext}` : ''}
     `;
 
     const messages = [
@@ -152,6 +155,57 @@ export const analyzeScreenshot = async (fileName, context = "", base64Image = nu
   }
 
   const data = await response.json();
+  return JSON.parse(data.choices[0].message.content);
+};
+
+/**
+ * Invokes the Multi-Agent Council to debate an SAP requirement.
+ * @param {string} requirement - User's business requirement.
+ * @param {string} context - The injected local RAG memory bank context.
+ */
+export const generateCouncilDebate = async (requirement, context = "") => {
+  let response;
+
+  if (LOCAL_GROQ_KEY && window.location.hostname === 'localhost') {
+    const systemPrompt = `You are the Aether Council. You must simulate a debate between 3 SAP experts: "SD Lead", "ABAP Dev", and "FICO Auditor". 
+They must discuss the user's requirement and identify architectural bottlenecks or proper solutions. 
+Return strictly valid JSON in this exact format:
+{
+  "debate": [
+    {"agent": "SD Lead", "message": "string"},
+    {"agent": "ABAP Dev", "message": "string"},
+    {"agent": "FICO Auditor", "message": "string"}
+  ],
+  "final_verdict": "string summarizing the agreed upon architectural solution"
+}
+Custom Architectural Constraints / Context: ${context || 'None'}`;
+
+    response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${LOCAL_GROQ_KEY}`
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Requirement: ${requirement}` }
+        ],
+        model: "llama-3.3-70b-versatile",
+        response_format: { type: "json_object" },
+        temperature: 0.7
+      })
+    });
+  } else {
+    response = await fetch("/api/groq-council", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requirement, context })
+    });
+  }
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || data.error || "Council Neural Link Offline");
   return JSON.parse(data.choices[0].message.content);
 };
 
