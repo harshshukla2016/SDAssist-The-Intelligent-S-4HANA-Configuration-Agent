@@ -128,7 +128,10 @@ const VisionLab = () => {
                 </div>
                 <h4 className="font-headline font-bold mb-1">Load SAP Screenshot</h4>
                 <p className="text-xs text-on-surface-variant mb-6">High-resolution diagnostic mode</p>
-                <label className="px-8 py-3.5 rounded-2xl bg-primary text-on-primary font-bold text-xs cursor-pointer hover:bg-primary-dim transition-all shadow-lg shadow-primary/20">
+                <label 
+                  aria-label="Upload SAP Screenshot for analysis"
+                  className="px-8 py-3.5 rounded-2xl bg-primary text-on-primary font-bold text-xs cursor-pointer hover:bg-primary-dim transition-all shadow-lg shadow-primary/20"
+                >
                   Select Artifact
                   <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                 </label>
@@ -144,6 +147,7 @@ const VisionLab = () => {
              <textarea 
                value={context}
                onChange={(e) => setContext(e.target.value)}
+               aria-label="SAP Issue Context Description"
                placeholder="Describe the issue... (e.g., Pricing mismatch on item 10)"
                className="w-full bg-surface-container-low border border-outline-variant/10 rounded-2xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all min-h-[100px] resize-none font-body text-on-surface/90"
              />
@@ -152,6 +156,7 @@ const VisionLab = () => {
           <button 
             disabled={!file || isScanning}
             onClick={handleScan}
+            aria-label="Initialize Neural Vision Scan"
             className={`w-full py-5 rounded-3xl font-headline font-bold flex items-center justify-center gap-3 transition-all ${file && !isScanning ? 'bg-primary text-on-primary shadow-2xl shadow-primary/20 hover:scale-[0.99]' : 'bg-surface-container-high text-on-surface-variant/40 cursor-not-allowed'}`}
           >
             {isScanning ? <RefreshCw className="animate-spin" /> : <Search size={20} />}
@@ -217,7 +222,12 @@ const VisionLab = () => {
                     </div>
                  </div>
 
-                 <div className="glass-panel p-8 rounded-[2.5rem] border border-outline-variant/10 flex items-center justify-between group cursor-pointer hover:border-primary/40 transition-all hover:bg-primary/5 active:scale-95">
+                  <div 
+                    role="button"
+                    aria-label="Inject these findings into the roadmap"
+                    tabIndex={0}
+                    className="glass-panel p-8 rounded-[2.5rem] border border-outline-variant/10 flex items-center justify-between group cursor-pointer hover:border-primary/40 transition-all hover:bg-primary/5 active:scale-95"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-surface-container-high flex items-center justify-center text-on-surface-variant group-hover:text-primary transition-colors">
                         <Maximize2 size={24} />

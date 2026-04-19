@@ -33,6 +33,7 @@ const CloudSyncPage = () => {
         <div className="flex gap-4">
           <button 
             onClick={handleAuth}
+            aria-label={googleToken ? 'Neural Link Active' : 'Authorize Google Hub'}
             className={`px-6 py-4 rounded-2xl border flex items-center gap-4 transition-all shadow-2xl ${googleToken ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-primary/5 border-primary/20 text-primary hover:bg-primary/10'}`}
           >
             <RefreshCw className={isSyncing ? 'animate-spin' : ''} size={20} />
@@ -43,6 +44,20 @@ const CloudSyncPage = () => {
                </div>
             </div>
           </button>
+          
+          {googleToken && (
+            <button 
+              onClick={() => window.open(`https://docs.google.com/spreadsheets/d/${import.meta.env.VITE_GOOGLE_SHEET_ID}`, '_blank')}
+              aria-label="Open Project Ledger in Google Sheets"
+              className="px-6 py-4 rounded-2xl bg-surface-container-high border border-outline-variant/20 hover:border-primary/40 text-on-surface-variant hover:text-primary transition-all flex items-center gap-3 shadow-xl"
+            >
+              <ExternalLink size={18} />
+              <div className="text-left">
+                <div className="font-headline text-sm font-bold">Open Ledger</div>
+                <div className="text-[10px] uppercase font-bold tracking-widest opacity-60">Google Sheets</div>
+              </div>
+            </button>
+          )}
         </div>
       </header>
 

@@ -1,7 +1,7 @@
 <div align="center">
 
 # 🛰️ SDAssist Aether: Neural S/4HANA Architect
-### *The Supreme Intelligence for SAP SD Configuration Orchestration*
+### *The Supreme Intelligence for SAP SD Configuration Orchestration (v12.0)*
 
 [![S/4HANA](https://img.shields.io/badge/SAP-S%2F4HANA_2023-blue?style=for-the-badge&logo=sap)](https://www.sap.com)
 [![Groq](https://img.shields.io/badge/IA_Engine-Groq_Llama_3.3-orange?style=for-the-badge)](https://groq.com)
@@ -19,14 +19,41 @@
 ---
 
 ## 🎯 The Vision & Vertical
-**Sector**: Enterprise ERP Technical Consulting (SAP S/4HANA).
-**Problem**: SAP SD (Sales & Distribution) configuration is notoriously fragmented. Consultants spend 60% of their time on repetitive "FSD" (Functional spec) documentation and manual matrix assignments.
-**Solution**: **Aether OS** – A multi-agent ecosystem that acts as a "Digital Twin" of an SAP Consultant, automating the entire configuration lifecycle from voice requirement to Google Workspace artifact.
+**Vertical Choice**: **Enterprise ERP Technical Consulting (SAP S/4HANA)**.
+
+### 🏢 The Problem
+SAP SD (Sales & Distribution) configuration is notoriously fragmented. Consultants spend 60% of their time on repetitive "FSD" (Functional spec) documentation, manual T-Code lookups, and manual matrix assignments.
+
+### 🚀 The Approach & Logic
+My approach is to treat a business requirement not just as a text query, but as an **Architecture Directive**. 
+- **Deterministic Mapping**: Instead of guessing, Aether uses a "Chain-of-Thought" prompting strategy to map business verbs (e.g., "Sell", "Bill") to specific technical components (e.g., "Sales Org", "Billing Type").
+- **Multi-Agent Debate**: For complex requirements, I implemented a "Council mode" where three unique LLM personas (SD, ABAP, FICO) audit the solution simultaneously to identify potential bottlenecks before they reach a production server.
+
+### ⚙️ How it Works
+1. **Ingest**: Requirement is captured via **Neural Voice** or text.
+2. **Audit**: The **Neural Overseer** checks for illegal T-Code loops.
+3. **Generate**: Groq Llama 3 systems render a high-fidelity roadmap JSON.
+4. **Sync**: Authenticated Google Cloud Ledger securely ports data to the enterprise ecosystem.
+5. **Document**: Functional FSDs, ABAP skeletons, and Agile Epics are auto-drafted.
+
+### 🧠 Key Assumptions Made
+- The user has basic knowledge of SAP terminology (T-Codes, Materials).
+- The enterprise environment uses S/4HANA (Standard Best Practices).
+- Internet connectivity is available for Groq/Vercel serverless handshakes.
+- Google Account is used for the centralized project ledger.
 
 ---
 
 ## 🧠 System Orchestration (Neural Logic)
-Aether operates on a **Tri-Agent Neural Core** that mirrors a professional consulting team:
+Aether operates on a **Hyperscale Neural Core** using Multi-Agent Orchestration:
+
+1. **Aether Architect (Llama 3.3)**: Primary roadmap generation.
+2. **The Council of Architects**: A specialized debate mode (SD/ABAP/FICO) for complex technical feasibility analysis.
+3. **Vision Neural**: Real-time SAP GUI screenshot OCR and glitch detection.
+4. **Local RAG Memory**: Proprietary business rule injection for zero-hallucination compliance.
+5. **Neural Overseer**: Real-time security and logic auditing.
+
+---
 
 ```mermaid
 sequenceDiagram
@@ -47,13 +74,14 @@ sequenceDiagram
 
 ---
 
-## 🛠️ The SD-Max Suite (Core Features)
+## 🛠️ The Supreme Suite (Core Features)
 
 | 🏛️ Architectural Core | ⚙️ Execution Hub | ☁️ Cloud Symphony |
 | :--- | :--- | :--- |
-| **Neural Architect**: Transforms raw speech into S/4HANA T-Code roadmaps. | **O2C Flow Visualizer**: Graphical mapping of the VA01 ↔ VF01 lifecycle. | **Neural Sync Ledger**: Authenticated Real-time Google Sheets database. |
-| **Enterprise Topology**: Live mapping of Sales Org ↔ Company Code ↔ Plant. | **Pricing Lab**: Technical simulation of the V/08 Pricing Procedure table. | **Local FSD Gen**: Automated friction-free `.txt` Functional Specification creation. |
-| **Overseer Safety**: Real-time audit layer for T-Code loops and security. | **Predictive Scheduler**: AI-driven Google Calendar slot blocking. | **Neural Voice**: Hands-free configuration via Web Speech API. |
+| **The Council**: Multi-agent SAP expert debate simulation. | **Vision Lab**: Base64-driven SAP GUI glitch OCR & analysis. | **Neural Sync Ledger**: Authenticated Real-time Google Sheets sync. |
+| **Enterprise Topology**: Live mapping of Sales Org ↔ Company Code. | **Pricing Lab**: V/08 Pricing Procedure simulation engine. | **Agile Gen**: Automated Jira Epics & User Story formatting. |
+| **T-Code Library**: A massive directory of hundreds of SAP transactions. | **ABAP Generator**: Instant BAPI wrapper code skeleton generation. | **Neural Voice**: Hands-free configuration via Web Speech API. |
+| **Memory Bank**: Local RAG for proprietary company rules. | **UAT Scripts**: Automated HTML test step generation (Plan/Actual). | **Edge Secure API**: Vercel Serverless backends for 100% key safety. |
 
 ---
 
@@ -94,5 +122,5 @@ Aether is designed for **Scalable Intelligence**:
 ---
 
 <div align="center">
-  <sub>Built by <a href="https://harsh-kumar-shukla-portfolio.vercel.app/" target="_blank">Harsh Shukla</a> • V10.0 Production Release</sub>
+  <sub>Built by <a href="https://harsh-kumar-shukla-portfolio.vercel.app/" target="_blank">Harsh Shukla</a> • V12.0 Supreme Architect Release</sub>
 </div>

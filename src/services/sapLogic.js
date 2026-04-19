@@ -12,6 +12,7 @@ const LOCAL_GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
  * @param {Object} projectMeta - Project metadata (client, industry, version).
  * @param {Object} neuralConfig - Neural parameters (temperature, persona).
  * @param {string} localRagContext - Parsed RAG local memory rules.
+ * @returns {Promise<Object>} The generated configuration roadmap.
  */
 export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfig = {}, localRagContext = "") => {
   if (!requirement) {
@@ -96,18 +97,11 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
       });
     }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Groq API Error:", errorData);
-      throw new Error(`Groq Failure: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`Groq Failure: ${response.status}`);
     const data = await response.json();
-    const result = JSON.parse(data.choices[0].message.content);
-    return result;
+    return JSON.parse(data.choices[0].message.content);
 
   } catch (error) {
-    console.error("SAP Architect Error (Groq):", error);
     return getDefaultRoadmap(requirement);
   }
 };
@@ -116,6 +110,8 @@ export const generateRoadmap = async (requirement, projectMeta = {}, neuralConfi
  * Neural Vision Engine: Analyzes SAP GUI screenshots (simulated).
  * @param {string} fileName - Name of the uploaded screenshot.
  * @param {string} context - User provided text context.
+ * @param {string} base64Image - Base64 encoded image string.
+ * @returns {Promise<Object>} The Vision analysis result.
  */
 export const analyzeScreenshot = async (fileName, context = "", base64Image = null) => {
   let response;
@@ -162,6 +158,7 @@ export const analyzeScreenshot = async (fileName, context = "", base64Image = nu
  * Invokes the Multi-Agent Council to debate an SAP requirement.
  * @param {string} requirement - User's business requirement.
  * @param {string} context - The injected local RAG memory bank context.
+ * @returns {Promise<Object>} The council debate transcript and verdict.
  */
 export const generateCouncilDebate = async (requirement, context = "") => {
   let response;

@@ -90,6 +90,7 @@ const TCodeLibrary = () => {
              <button
                key={mod}
                onClick={() => setActiveModule(mod)}
+               aria-label={`Filter by ${mod === 'All' ? 'all modules' : mod + ' module'}`}
                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeModule === mod ? 'bg-primary text-on-primary shadow-md' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest'}`}
              >
                {mod}
@@ -103,6 +104,7 @@ const TCodeLibrary = () => {
           type="text"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
+          aria-label="Search Transaction Codes"
           placeholder="Search by T-Code, Description, or Sub-Category... (e.g. 'Sales', 'VA01')"
           className="w-full bg-surface-container-highest border border-outline-variant/20 rounded-2xl py-4 pl-14 pr-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all placeholder:text-on-surface-variant/40 shadow-inner group-focus-within:bg-surface-container-lowest"
         />
