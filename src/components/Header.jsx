@@ -1,15 +1,23 @@
 import React from 'react';
-import { Bell, Settings2, ShieldAlert } from 'lucide-react';
+import { Bell, Settings2, ShieldAlert, Menu } from 'lucide-react';
 import StatusGlow from './StatusGlow';
 import { useAppState } from '../context/StateContext';
 import AetherLogo from './AetherLogo';
 
-const Header = ({ onOpenAlpha, onOpenNeural, onExit }) => {
+const Header = ({ onOpenAlpha, onOpenNeural, onOpenDrawer, onExit }) => {
   const { isProcessing, setActivePage } = useAppState();
 
   return (
-    <header className="h-16 border-b border-outline-variant/10 flex items-center justify-between px-8 premium-glass sticky top-0 z-50">
-      <div className="flex items-center gap-6">
+    <header className="h-16 border-b border-outline-variant/10 flex items-center justify-between px-4 md:px-8 premium-glass sticky top-0 z-50">
+      <div className="flex items-center gap-3 md:gap-6">
+        <button 
+          onClick={onOpenDrawer}
+          className="p-2 -ml-2 rounded-xl text-on-surface-variant hover:text-primary md:hidden transition-all"
+          aria-label="Open Neural Menu"
+        >
+          <Menu size={24} />
+        </button>
+
         <div 
           className="flex items-center gap-2 cursor-pointer group" 
           onClick={onExit}
@@ -18,8 +26,8 @@ const Header = ({ onOpenAlpha, onOpenNeural, onExit }) => {
           <AetherLogo size={28} />
           <span className="font-headline font-bold text-lg tracking-tight group-hover:text-primary transition-colors">SDAssist <span className="text-primary">Aether</span></span>
         </div>
-        <div className="h-4 w-px bg-outline-variant/30 hidden sm:block"></div>
-        <div className="hidden sm:flex items-center gap-4 text-xs font-body text-on-surface-variant">
+        <div className="h-4 w-px bg-outline-variant/30 hidden lg:block"></div>
+        <div className="hidden lg:flex items-center gap-4 text-xs font-body text-on-surface-variant">
           <button onClick={onOpenAlpha} className="hover:text-primary transition-colors cursor-pointer capitalize">Project Alpha</button>
           <button onClick={onOpenNeural} className="hover:text-primary transition-colors cursor-pointer">Neural Configuration</button>
           <span className="hover:text-primary transition-colors cursor-pointer flex items-center gap-2">

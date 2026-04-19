@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import SafetyLog from './SafetyLog';
+import MobileDrawer from './MobileDrawer';
 import { useAppState } from '../context/StateContext';
 
 import Dashboard from './Dashboard';
@@ -29,6 +30,7 @@ const AetherLayout = ({ onExit }) => {
   const { activePage } = useAppState();
   const [isAlphaOpen, setIsAlphaOpen] = React.useState(false);
   const [isNeuralOpen, setIsNeuralOpen] = React.useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
   const renderPage = () => {
     switch (activePage) {
@@ -56,6 +58,7 @@ const AetherLayout = ({ onExit }) => {
     <div className="flex h-screen bg-background text-on-surface font-body overflow-hidden">
       <div className="gradient-mesh"></div>
       <Sidebar />
+      <MobileDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
       <ProjectAlpha isOpen={isAlphaOpen} onClose={() => setIsAlphaOpen(false)} />
       <NeuralConfig isOpen={isNeuralOpen} onClose={() => setIsNeuralOpen(false)} />
       
@@ -63,6 +66,7 @@ const AetherLayout = ({ onExit }) => {
         <Header 
           onOpenAlpha={() => setIsAlphaOpen(true)} 
           onOpenNeural={() => setIsNeuralOpen(true)} 
+          onOpenDrawer={() => setIsDrawerOpen(true)}
           onExit={onExit}
         />
         
